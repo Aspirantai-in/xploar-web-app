@@ -49,11 +49,11 @@ export function TaskCard({ task }: TaskCardProps) {
 
     return (
         <motion.div
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
         >
             <Card className={cn(
-                "transition-all duration-200 cursor-pointer",
+                "transition-all duration-200 cursor-pointer border-2",
                 task.isDone
                     ? "bg-gradient-flow/20 border-electric-aqua"
                     : "hover:shadow-md border-electric-aqua/20"
@@ -68,17 +68,19 @@ export function TaskCard({ task }: TaskCardProps) {
                                 className="h-8 w-8 p-0"
                             >
                                 {task.isDone ? (
-                                    <CheckCircle2 className="h-5 w-5 text-electric-aqua" />
+                                    <CheckCircle2 className="h-5 w-5" />
                                 ) : (
-                                    <Circle className="h-5 w-5 text-void-black/40" />
+                                    <Circle className="h-5 w-5" />
                                 )}
                             </Button>
 
                             <div className="flex items-center space-x-2">
                                 <TaskIcon className={cn("h-4 w-4", getTaskColor(task.kind))} />
                                 <span className={cn(
-                                    "font-medium",
-                                    task.isDone && "line-through text-void-black/60"
+                                    "font-medium text-sm px-2 py-1 rounded-full",
+                                    task.isDone
+                                        ? "bg-green-100 text-green-700 line-through"
+                                        : "bg-dark-blue/10 text-dark-blue"
                                 )}>
                                     {task.kind}
                                 </span>
@@ -87,7 +89,9 @@ export function TaskCard({ task }: TaskCardProps) {
                             <div className="flex-1">
                                 <p className={cn(
                                     "font-medium",
-                                    task.isDone && "line-through text-void-black/60"
+                                    task.isDone
+                                        ? "line-through text-green-700"
+                                        : "text-void-black"
                                 )}>
                                     {topic?.name || 'Unknown Topic'}
                                 </p>
@@ -100,10 +104,10 @@ export function TaskCard({ task }: TaskCardProps) {
 
                         <div className="flex items-center space-x-2">
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => deferTask(task.id)}
-                                className="h-8 px-2"
+                                className="h-8 px-3 border-dark-blue/30 text-dark-blue hover:bg-dark-blue hover:text-ice-white hover:border-dark-blue transition-all duration-200"
                             >
                                 <Calendar className="h-3 w-3 mr-1" />
                                 Defer

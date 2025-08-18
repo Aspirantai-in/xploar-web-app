@@ -44,10 +44,12 @@ export function Header() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    <div className="h-8 w-8 rounded-lg bg-dark-blue flex items-center justify-center">
-                        <span className="text-ice-white font-bold text-lg">X</span>
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center">
+                        <span className="text-void-black font-bold text-lg">X</span>
                     </div>
-                    <h1 className="text-xl font-bold text-dark-blue">xploar.ai</h1>
+                    <h1 className="text-xl font-bold bg-clip-text text-dark-blue">
+                        xploar.ai
+                    </h1>
                 </motion.div>
 
                 {/* Search Bar */}
@@ -72,12 +74,12 @@ export function Header() {
                             {/* Pro Badge */}
                             {isProUser && (
                                 <motion.div
-                                    className="flex items-center space-x-1 bg-dark-blue px-2 py-1 rounded-full"
+                                    className="flex items-center space-x-1 bg-gradient-flow px-2 py-1 rounded-full"
                                     animate={{ scale: [1, 1.05, 1] }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                 >
-                                    <Crown className="h-4 w-4 text-ice-white" />
-                                    <span className="text-xs font-semibold text-ice-white">PRO</span>
+                                    <Crown className="h-4 w-4 text-void-black" />
+                                    <span className="text-xs font-semibold text-void-black">PRO</span>
                                 </motion.div>
                             )}
 

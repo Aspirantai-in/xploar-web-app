@@ -49,10 +49,10 @@ export function SettingsPanel() {
                                 </div>
                             </div>
                             {isProUser && (
-                                <div className="p-3 bg-dark-blue/10 rounded-lg border border-dark-blue/20">
+                                <div className="p-3 bg-gradient-flow/20 rounded-lg border border-electric-aqua/20">
                                     <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-dark-blue rounded-full"></div>
-                                        <span className="text-sm font-medium text-dark-blue">Pro Member</span>
+                                        <div className="w-2 h-2 bg-electric-aqua rounded-full"></div>
+                                        <span className="text-sm font-medium">Pro Member</span>
                                     </div>
                                     <p className="text-xs text-void-black/70 mt-1">
                                         You have access to all premium features

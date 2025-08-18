@@ -105,24 +105,24 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                 {!isCollapsed && (
 
                     <motion.div
-                        className="mb-6 p-4 bg-gradient-flow rounded-lg text-center"
+                        className="mb-6 p-4 bg-ice-white rounded-lg text-center"
                         whileHover={{ scale: 1.02 }}
                     >
                         <div className="mb-3">
-                            <h3 className="font-semibold text-void-black text-lg">
+                            <h3 className="font-semibold text-dark-blue text-lg">
                                 Welcome back!
                             </h3>
-                            <p className="text-sm text-void-black/70 truncate">
+                            <p className="text-sm text-dark-blue /80 truncate">
                                 {currentUser.name}
                             </p>
                         </div>
 
                         <div className="flex items-center justify-center space-x-2 mb-2">
-                            <Trophy className="h-5 w-5 text-void-black" />
-                            <span className="font-semibold text-void-black">Daily Streak</span>
+                            <Trophy className="h-5 w-5 text-dark-blue " />
+                            <span className="font-semibold ttext-dark-blue ">Daily Streak</span>
                         </div>
                         <motion.div
-                            className="text-2xl font-bold text-void-black"
+                            className="text-2xl font-bold text-ice-white"
                             animate={{ scale: dailyStreak > 0 ? [1, 1.1, 1] : 1 }}
                             transition={{ duration: 1, repeat: dailyStreak > 0 ? Infinity : 0, repeatDelay: 3 }}
                         >
@@ -173,13 +173,13 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                                         <div className="flex-1 text-left">
                                             <div className={cn(
                                                 "font-medium transition-colors",
-                                                isActive ? "text-void-black" : "text-void-black"
+                                                isActive ? "text-ice-white" : "text-void-black"
                                             )}>
                                                 {item.label}
                                             </div>
                                             <div className={cn(
                                                 "text-xs transition-colors",
-                                                isActive ? "text-void-black/70" : "text-void-black/50"
+                                                isActive ? "text-ice-white/80" : "text-void-black/50"
                                             )}>
                                                 {item.description}
                                             </div>
@@ -192,7 +192,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                                             animate={{ scale: 1, rotate: 0 }}
                                             transition={{ duration: 0.2 }}
                                         >
-                                            <ChevronRight className="h-4 w-4 ml-2 text-void-black" />
+                                            <ChevronRight className="h-4 w-4 ml-2 text-ice-white" />
                                         </motion.div>
                                     )}
                                 </Button>
@@ -236,7 +236,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
 
                         {/* Motivational Quote */}
                         <motion.div
-                            className="p-3 bg-gradient-to-r from-dark-blue/10 via-cosmic-indigo/10 to-electric-aqua/10 rounded-lg border border-dark-blue/20"
+                            className="p-3 bg-dark-blue/10 rounded-lg border border-dark-blue/20"
                             animate={{
                                 boxShadow: [
                                     "0 0 0px rgba(74, 227, 181, 0.2)",
@@ -246,8 +246,8 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                             }}
                             transition={{ duration: 3, repeat: Infinity }}
                         >
-                            <div className="text-xs text-void-black/60 mb-1">💡 Today's Motivation</div>
-                            <div className="text-sm font-medium text-void-black leading-relaxed">
+                            <div className="text-xs text-dark-blue/80 mb-1">💡 Today's Motivation</div>
+                            <div className="text-sm font-medium text-dark-blue leading-relaxed">
                                 "Success in UPSC is not about being perfect, it's about being consistent."
                             </div>
                         </motion.div>
@@ -255,16 +255,16 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                         {/* Pro Upgrade CTA */}
                         {!useAppStore.getState().isProUser && (
                             <motion.div
-                                className="p-3 bg-gradient-flow rounded-lg text-center cursor-pointer"
+                                className="p-3 bg-dark-blue text-ice-white rounded-lg text-center cursor-pointer"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => useAppStore.getState().upgradeToPro()}
                             >
                                 <div className="flex items-center justify-center space-x-2 mb-2">
-                                    <Trophy className="h-4 w-4 text-void-black" />
-                                    <span className="font-semibold text-void-black text-sm">Upgrade to Pro</span>
+                                    <Trophy className="h-4 w-4 text-ice-white" />
+                                    <span className="font-semibold text-ice-white text-sm">Upgrade to Pro</span>
                                 </div>
-                                <div className="text-xs text-void-black/70">
+                                <div className="text-xs text-ice-white/80">
                                     Unlock advanced analytics & features
                                 </div>
                             </motion.div>

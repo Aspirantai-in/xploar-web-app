@@ -190,7 +190,7 @@ export function StudyPlanner() {
                                                     className={cn(
                                                         "cursor-pointer transition-all duration-200 border-2",
                                                         isActive && "ring-2 ring-electric-aqua ring-offset-2",
-                                                        isCompleted && "bg-dark-blue/10 border-dark-blue",
+                                                        isCompleted && "bg-gradient-flow border-electric-aqua",
                                                         !isCompleted && !isActive && "border-electric-aqua/20 hover:border-electric-aqua/40"
                                                     )}
                                                     onClick={() => viewDay(day.day)}
