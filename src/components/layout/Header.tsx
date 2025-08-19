@@ -47,7 +47,7 @@ export function Header() {
                     <img
                         src="/Xploar_logo.png"
                         alt="xploar.ai logo"
-                        className="h-10  w-30 "
+                        className="h-10 w-30"
                     />
                 </motion.div>
 
