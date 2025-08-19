@@ -1,6 +1,7 @@
 'use client';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, User, Bell, Palette, Database, Info } from 'lucide-react';
+import { Settings, User, Bell, Palette, Database, Info, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,14 @@ import { useAppStore } from '@/lib/store';
 
 export function SettingsPanel() {
     const { currentUser, isProUser, resetApplicationState } = useAppStore();
+    const [isOfflineSynced, setIsOfflineSynced] = useState(false);
+
+    const handleSyncToggle = () => {
+        setIsOfflineSynced(prev => !prev);
+        // In a real app, this would trigger a complex sync process.
+        // Here, we just simulate it for the demo.
+        alert(isOfflineSynced ? "Offline data unsynced." : "Offline kit synced successfully!");
+    };
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
@@ -97,6 +106,16 @@ export function SettingsPanel() {
                                 <Button variant="outline" size="sm">
                                     <Palette className="h-4 w-4 mr-2" />
                                     Light Mode
+                                </Button>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium">Offline Kit Sync (Demo)</p>
+                                    <p className="text-sm text-void-black/70">Sync your progress for offline access.</p>
+                                </div>
+                                <Button variant="outline" size="sm" onClick={handleSyncToggle}>
+                                    {isOfflineSynced ? <WifiOff className="h-4 w-4 mr-2 text-red-500" /> : <Wifi className="h-4 w-4 mr-2 text-green-500" />}
+                                    {isOfflineSynced ? 'Unsync' : 'Sync Now'}
                                 </Button>
                             </div>
                         </CardContent>

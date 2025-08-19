@@ -14,11 +14,12 @@ import { DebateRoom } from '@/components/features/debate/DebateRoom';
 import { InterviewRoom } from '@/components/features/interview/InterviewRoom';
 import { ProgressDashboard } from '@/components/features/progress/ProgressDashboard';
 import { SettingsPanel } from '@/components/features/settings/SettingsPanel';
-// New Feature Components
 import { ContentHub } from '@/components/features/content-hub/ContentHub';
 import { CommunityHub } from '@/components/features/community/CommunityHub';
 import { MentorConnect } from '@/components/features/mentor-connect/MentorConnect';
 import { Recommendations } from '@/components/features/recommendations/Recommendations';
+import { SyllabusMap } from '@/components/features/syllabus/SyllabusMap';
+import { DailyChallenge } from '@/components/features/daily-challenge/DailyChallenge';
 
 
 interface MainLayoutProps {
@@ -28,6 +29,9 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
     const { activeFeature, currentUser } = useAppStore();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    // CORRECTED: This logic now ensures the main app layout only shows AFTER onboarding.
+    const showAppLayout = currentUser && activeFeature !== FEATURES.ONBOARDING;
 
     const renderFeature = () => {
         switch (activeFeature) {
@@ -45,7 +49,6 @@ export function MainLayout({ children }: MainLayoutProps) {
                 return <ProgressDashboard />;
             case FEATURES.SETTINGS:
                 return <SettingsPanel />;
-            // New Features
             case FEATURES.CONTENT_HUB:
                 return <ContentHub />;
             case FEATURES.COMMUNITY:
@@ -54,6 +57,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                 return <MentorConnect />;
             case FEATURES.RECOMMENDATIONS:
                 return <Recommendations />;
+            case FEATURES.SYLLABUS:
+                return <SyllabusMap />;
+            case FEATURES.DAILY_CHALLENGE:
+                return <DailyChallenge />;
             default:
                 return currentUser ? <StudyPlanner /> : <OnboardingFlow />;
         }
@@ -61,16 +68,16 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-ice-white via-ice-white to-electric-aqua/5">
-            {/* Header */}
-            <Header />
+            {/* Header is now conditionally rendered */}
+            {showAppLayout && <Header />}
 
             {/* Main Content Area */}
             <div className="flex">
-                {/* Sidebar - Only show when user is logged in */}
-                {currentUser && <Sidebar onCollapseChange={setSidebarCollapsed} />}
+                {/* Sidebar is now conditionally rendered */}
+                {showAppLayout && <Sidebar onCollapseChange={setSidebarCollapsed} />}
 
-                {/* Main Content */}
-                <main className={`flex-1 transition-all duration-300 ${currentUser ? (sidebarCollapsed ? 'ml-[5.5rem]' : 'ml-64') : ''
+                {/* Main Content margin adjusts based on whether the app layout is shown */}
+                <main className={`flex-1 transition-all duration-300 ${showAppLayout ? (sidebarCollapsed ? 'ml-[5.5rem]' : 'ml-64') : ''
                     }`}>
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -82,7 +89,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 duration: 0.3,
                                 ease: "easeInOut"
                             }}
-                            className="min-h-[calc(100vh-4rem)]"
+                            // The min-height is adjusted to account for the header's presence or absence
+                            className={showAppLayout ? "min-h-[calc(100vh-4rem)]" : "min-h-screen"}
                         >
                             {renderFeature()}
                             {children}

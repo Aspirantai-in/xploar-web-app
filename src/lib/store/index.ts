@@ -75,7 +75,9 @@ export const useAppStore = create<AppStore>()(
 
             signIn: (email: string, name: string) => {
                 const user: User = { id: `user_${Date.now()}`, email, name };
-                set({ currentUser: user, activeFeature: FEATURES.STUDY_PLANNER });
+                // CORRECTED: The signIn function should only handle setting the user.
+                // The OnboardingFlow component will handle the navigation logic.
+                set({ currentUser: user });
             },
             signOut: () => set({ currentUser: null, activeFeature: FEATURES.ONBOARDING }),
             upgradeToPro: () => set({ isProUser: true }),

@@ -1,4 +1,3 @@
-// 📁 src/lib/data/extended-data.ts
 import {
     CurrentAffairsArticle,
     DailyQuiz,
@@ -11,6 +10,59 @@ import {
     StudyGroup
 } from '@/lib/types';
 
+// ... (other sample data remains the same)
+
+// Mentor Data
+export const SAMPLE_MENTORS: MentorProfile[] = [
+    {
+        id: "mentor_001",
+        userId: "user_mentor_001",
+        name: "Priya Sharma",
+        imageUrl: "https://placehold.co/400x400/4AE3B5/0B0B0F?text=PS",
+        headline: "AIR 15, CSE 2022 - Polity & Governance Expert",
+        bio: "Former IAS officer with expertise in Constitutional Law and Public Administration. Helped 200+ aspirants clear UPSC.",
+        expertise: ["polity_preamble", "polity_fr", "ethics_integrity"],
+        hourlyRate: 2000,
+        availabilitySlots: [
+            "2025-08-20T10:00:00.000Z",
+            "2025-08-20T15:00:00.000Z",
+            "2025-08-21T09:00:00.000Z",
+            "2025-08-21T16:00:00.000Z"
+        ]
+    },
+    {
+        id: "mentor_002",
+        userId: "user_mentor_002",
+        name: "Rahul Verma",
+        imageUrl: "https://placehold.co/400x400/E879F9/0B0B0F?text=RV",
+        headline: "AIR 8, CSE 2021 - Geography & Environment Specialist",
+        bio: "Geography optional specialist with deep knowledge of climate change and environmental issues. Clear, concept-based teaching approach.",
+        expertise: ["geog_monsoon", "env_bio"],
+        hourlyRate: 1800,
+        availabilitySlots: [
+            "2025-08-20T11:00:00.000Z",
+            "2025-08-20T17:00:00.000Z",
+            "2025-08-22T10:00:00.000Z"
+        ]
+    },
+    {
+        id: "mentor_003",
+        userId: "user_mentor_003",
+        name: "Anjali Singh",
+        imageUrl: "https://placehold.co/400x400/7C3AED/FFFFFF?text=AS",
+        headline: "AIR 25, CSE 2023 - Economics & Current Affairs",
+        bio: "Economics graduate from Delhi School of Economics. Specializes in making complex economic concepts simple and relatable.",
+        expertise: ["econ_fiscal", "history_ivc"],
+        hourlyRate: 1500,
+        availabilitySlots: [
+            "2025-08-20T14:00:00.000Z",
+            "2025-08-21T11:00:00.000Z",
+            "2025-08-22T15:00:00.000Z"
+        ]
+    }
+];
+
+// ... (other sample data remains the same)
 // Current Affairs Data
 export const SAMPLE_CURRENT_AFFAIRS: CurrentAffairsArticle[] = [
     {
@@ -173,50 +225,6 @@ export const SAMPLE_FLASHCARDS: Flashcard[] = [
         deckId: "deck_003",
         front: "What is fiscal deficit?",
         back: "Total expenditure minus total receipts excluding borrowings"
-    }
-];
-
-// Mentor Data
-export const SAMPLE_MENTORS: MentorProfile[] = [
-    {
-        id: "mentor_001",
-        userId: "user_mentor_001",
-        headline: "AIR 15, CSE 2022 - Polity & Governance Expert",
-        bio: "Former IAS officer with expertise in Constitutional Law and Public Administration. Helped 200+ aspirants clear UPSC.",
-        expertise: ["polity_preamble", "polity_fr", "ethics_integrity"],
-        hourlyRate: 2000,
-        availabilitySlots: [
-            "2025-08-20T10:00:00.000Z",
-            "2025-08-20T15:00:00.000Z",
-            "2025-08-21T09:00:00.000Z",
-            "2025-08-21T16:00:00.000Z"
-        ]
-    },
-    {
-        id: "mentor_002",
-        userId: "user_mentor_002",
-        headline: "AIR 8, CSE 2021 - Geography & Environment Specialist",
-        bio: "Geography optional specialist with deep knowledge of climate change and environmental issues. Clear, concept-based teaching approach.",
-        expertise: ["geog_monsoon", "env_bio"],
-        hourlyRate: 1800,
-        availabilitySlots: [
-            "2025-08-20T11:00:00.000Z",
-            "2025-08-20T17:00:00.000Z",
-            "2025-08-22T10:00:00.000Z"
-        ]
-    },
-    {
-        id: "mentor_003",
-        userId: "user_mentor_003",
-        headline: "AIR 25, CSE 2023 - Economics & Current Affairs",
-        bio: "Economics graduate from Delhi School of Economics. Specializes in making complex economic concepts simple and relatable.",
-        expertise: ["econ_fiscal", "history_ivc"],
-        hourlyRate: 1500,
-        availabilitySlots: [
-            "2025-08-20T14:00:00.000Z",
-            "2025-08-21T11:00:00.000Z",
-            "2025-08-22T15:00:00.000Z"
-        ]
     }
 ];
 

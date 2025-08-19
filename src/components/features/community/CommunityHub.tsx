@@ -1,14 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, MessageSquare, Edit, UserPlus } from 'lucide-react';
+import { Users, MessageSquare, Edit, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DiscussionForums } from './DiscussionForums';
-import { PeerReview } from './PeerReview';
 import { StudyGroups } from './StudyGroups';
+import { PeerReview } from './PeerReview';
+import { Leaderboard } from './Leaderboard';
 
-type ActiveTab = 'forums' | 'groups' | 'reviews';
+type ActiveTab = 'forums' | 'groups' | 'reviews' | 'leaderboard';
 
 export function CommunityHub() {
     const [activeTab, setActiveTab] = useState<ActiveTab>('forums');
@@ -21,6 +22,8 @@ export function CommunityHub() {
                 return <StudyGroups />;
             case 'reviews':
                 return <PeerReview />;
+            case 'leaderboard':
+                return <Leaderboard />;
             default:
                 return <DiscussionForums />;
         }
@@ -35,7 +38,7 @@ export function CommunityHub() {
             >
                 <h1 className="text-3xl font-bold text-void-black mb-2">Community & Collaboration</h1>
                 <p className="text-void-black/70">
-                    Engage with peers, form study groups, and get your answers reviewed.
+                    Engage with peers, form study groups, and compete on the weekly leaderboard.
                 </p>
             </motion.div>
 
@@ -56,6 +59,9 @@ export function CommunityHub() {
                             </Button>
                             <Button variant={activeTab === 'reviews' ? 'default' : 'ghost'} onClick={() => setActiveTab('reviews')}>
                                 <Edit className="h-4 w-4 mr-2" /> Peer Review
+                            </Button>
+                            <Button variant={activeTab === 'leaderboard' ? 'default' : 'ghost'} onClick={() => setActiveTab('leaderboard')}>
+                                <Trophy className="h-4 w-4 mr-2" /> Leaderboard
                             </Button>
                         </div>
                     </CardContent>

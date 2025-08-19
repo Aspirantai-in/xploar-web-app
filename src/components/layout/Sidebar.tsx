@@ -14,7 +14,9 @@ import {
     Users,
     UserCheck,
     Lightbulb,
-    Library
+    Library,
+    Map,
+    ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
@@ -34,6 +36,18 @@ const navigationItems = [
         description: 'Daily tasks & schedule'
     },
     {
+        feature: FEATURES.SYLLABUS,
+        label: 'Syllabus',
+        icon: Map,
+        description: 'Track your coverage'
+    },
+    {
+        feature: FEATURES.DAILY_CHALLENGE,
+        label: 'Daily Challenge',
+        icon: ShieldCheck,
+        description: '100 problems a day'
+    },
+    {
         feature: FEATURES.CONTENT_HUB,
         label: 'Content Hub',
         icon: Library,
@@ -44,6 +58,18 @@ const navigationItems = [
         label: 'Mock Tests',
         icon: Target,
         description: 'Practice & evaluate'
+    },
+    {
+        feature: FEATURES.DEBATE,
+        label: 'AI Debate',
+        icon: MessageCircle,
+        description: 'Practice arguments'
+    },
+    {
+        feature: FEATURES.INTERVIEW,
+        label: 'Mock Interview',
+        icon: Mic,
+        description: 'AI-driven interviews'
     },
     {
         feature: FEATURES.COMMUNITY,

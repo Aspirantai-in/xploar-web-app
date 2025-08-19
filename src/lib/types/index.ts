@@ -1,4 +1,3 @@
-// 📁 src/lib/types/index.ts
 export type UserID = string;
 export type TopicID = string;
 export type TaskID = string;
@@ -235,6 +234,8 @@ export type WebinarID = string;
 export interface MentorProfile {
     id: MentorID;
     userId: UserID;
+    name: string;
+    imageUrl: string;
     headline: string;
     bio: string;
     expertise: TopicID[];

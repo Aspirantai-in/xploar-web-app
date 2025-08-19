@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { getTodayString, formatDate } from '@/lib/utils/dateUtils';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ArticleView } from './ArticleView';
 
 export function CurrentAffairs() {
     const { fetchCurrentAffairs, fetchDailyQuiz } = useAppStore();
@@ -16,6 +17,8 @@ export function CurrentAffairs() {
     const [loading, setLoading] = useState(true);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
     const [showQuizResults, setShowQuizResults] = useState(false);
+    const [selectedArticle, setSelectedArticle] = useState<CurrentAffairsArticle | null>(null);
+
 
     useEffect(() => {
         const loadData = async () => {
@@ -42,6 +45,10 @@ export function CurrentAffairs() {
 
     if (loading) {
         return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading Today's Affairs..." /></div>;
+    }
+
+    if (selectedArticle) {
+        return <ArticleView article={selectedArticle} onBack={() => setSelectedArticle(null)} />;
     }
 
     const quizScore = quiz ? Object.entries(selectedAnswers).reduce((score, [qIndex, ansIndex]) => {
@@ -81,7 +88,7 @@ export function CurrentAffairs() {
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-void-black/80">{article.summary}</p>
-                                        <Button variant="link" className="p-0 h-auto mt-2">Read More</Button>
+                                        <Button variant="link" className="p-0 h-auto mt-2" onClick={() => setSelectedArticle(article)}>Read More</Button>
                                     </CardContent>
                                 </Card>
                             </motion.div>

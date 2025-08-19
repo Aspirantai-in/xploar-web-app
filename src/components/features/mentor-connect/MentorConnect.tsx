@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { UserCheck, Video, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, } from '@/components/ui/card';
+import { FindMentor } from './FindMentor';
+import { Webinars } from './Webinars';
 
 type ActiveTab = 'mentors' | 'webinars';
 
@@ -13,11 +15,11 @@ export function MentorConnect() {
     const renderContent = () => {
         switch (activeTab) {
             case 'mentors':
-                return <MentorList />;
+                return <FindMentor />;
             case 'webinars':
-                return <WebinarList />;
+                return <Webinars />;
             default:
-                return <MentorList />;
+                return <FindMentor />;
         }
     };
 
@@ -60,8 +62,3 @@ export function MentorConnect() {
         </div>
     );
 }
-
-// Create dummy components for now
-const MentorList = () => <Card><CardHeader><CardTitle>Mentors</CardTitle></CardHeader><CardContent><p>List of mentors will be displayed here.</p></CardContent></Card>;
-const WebinarList = () => <Card><CardHeader><CardTitle>Webinars</CardTitle></CardHeader><CardContent><p>List of webinars will be displayed here.</p></CardContent></Card>;
-11
