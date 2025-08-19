@@ -10,7 +10,11 @@ import {
     Trophy,
     Settings,
     ChevronRight,
-    Menu, ChevronLeft
+    Menu, ChevronLeft,
+    Users,
+    UserCheck,
+    Lightbulb,
+    Library
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
@@ -30,22 +34,34 @@ const navigationItems = [
         description: 'Daily tasks & schedule'
     },
     {
+        feature: FEATURES.CONTENT_HUB,
+        label: 'Content Hub',
+        icon: Library,
+        description: 'Resources & materials'
+    },
+    {
         feature: FEATURES.MOCK_TESTS,
         label: 'Mock Tests',
         icon: Target,
         description: 'Practice & evaluate'
     },
     {
-        feature: FEATURES.DEBATE,
-        label: 'AI Debate',
-        icon: MessageCircle,
-        description: 'Practice arguments'
+        feature: FEATURES.COMMUNITY,
+        label: 'Community',
+        icon: Users,
+        description: 'Collaborate with peers'
     },
     {
-        feature: FEATURES.INTERVIEW,
-        label: 'Interview',
-        icon: Mic,
-        description: 'Mock interviews'
+        feature: FEATURES.MENTOR_CONNECT,
+        label: 'Mentors',
+        icon: UserCheck,
+        description: 'Expert guidance'
+    },
+    {
+        feature: FEATURES.RECOMMENDATIONS,
+        label: 'AI Insights',
+        icon: Lightbulb,
+        description: 'Personalized advice'
     },
     {
         feature: FEATURES.PROGRESS,

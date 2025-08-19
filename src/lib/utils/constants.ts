@@ -1,3 +1,17 @@
+
+export const TASK_TYPES = {
+    READ: 'Read',
+    practice: 'Practice',
+    explain: 'Explain',
+    recall: 'Recall',
+} as const;
+
+export const USER_ROLES = {
+    STUDENT: 'student',
+    MENTOR: 'mentor',
+    ADMIN: 'admin',
+} as const;
+
 export const APP_CONFIG = {
     STORAGE_KEY: 'xploar_app_state',
     DEFAULT_STUDY_DURATION: 90, // days
@@ -16,17 +30,10 @@ export const FEATURES = {
     INTERVIEW: 'interview',
     PROGRESS: 'progress',
     SETTINGS: 'settings',
+    // New Features
+    CONTENT_HUB: 'content-hub',
+    COMMUNITY: 'community',
+    MENTOR_CONNECT: 'mentor-connect',
+    RECOMMENDATIONS: 'recommendations',
 } as const;
 
-export const TASK_TYPES = {
-    READ: 'Read',
-    practice: 'Practice',
-    explain: 'Explain',
-    recall: 'Recall',
-} as const;
-
-export const USER_ROLES = {
-    STUDENT: 'student',
-    MENTOR: 'mentor',
-    ADMIN: 'admin',
-} as const;

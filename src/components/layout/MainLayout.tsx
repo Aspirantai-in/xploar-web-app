@@ -14,6 +14,12 @@ import { DebateRoom } from '@/components/features/debate/DebateRoom';
 import { InterviewRoom } from '@/components/features/interview/InterviewRoom';
 import { ProgressDashboard } from '@/components/features/progress/ProgressDashboard';
 import { SettingsPanel } from '@/components/features/settings/SettingsPanel';
+// New Feature Components
+import { ContentHub } from '@/components/features/content-hub/ContentHub';
+import { CommunityHub } from '@/components/features/community/CommunityHub';
+import { MentorConnect } from '@/components/features/mentor-connect/MentorConnect';
+import { Recommendations } from '@/components/features/recommendations/Recommendations';
+
 
 interface MainLayoutProps {
     children?: React.ReactNode;
@@ -39,6 +45,15 @@ export function MainLayout({ children }: MainLayoutProps) {
                 return <ProgressDashboard />;
             case FEATURES.SETTINGS:
                 return <SettingsPanel />;
+            // New Features
+            case FEATURES.CONTENT_HUB:
+                return <ContentHub />;
+            case FEATURES.COMMUNITY:
+                return <CommunityHub />;
+            case FEATURES.MENTOR_CONNECT:
+                return <MentorConnect />;
+            case FEATURES.RECOMMENDATIONS:
+                return <Recommendations />;
             default:
                 return currentUser ? <StudyPlanner /> : <OnboardingFlow />;
         }
