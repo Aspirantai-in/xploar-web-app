@@ -85,10 +85,18 @@ export function SyllabusMap() {
                 const subTopics = topic.subTopics.map(subTopic => {
                     const progress = calculateProgress([subTopic.id], studyPlan);
                     const subTopicWithProgress = { ...subTopic, progress };
-                    allSubTopics.push(subTopicWithProgress);
+                    // Only add sub-topics to the weakness detection pool
+                    if (subTopic.weight) {
+                        allSubTopics.push(subTopicWithProgress);
+                    }
                     return subTopicWithProgress;
                 });
-                const topicProgress = subTopics.length > 0 ? subTopics.reduce((acc, st) => acc + st.progress, 0) / subTopics.length : 0;
+
+                // CORRECTED LOGIC: If a topic has no sub-topics, calculate its progress based on its own ID.
+                const topicProgress = subTopics.length > 0
+                    ? subTopics.reduce((acc, st) => acc + st.progress, 0) / subTopics.length
+                    : calculateProgress([topic.id], studyPlan);
+
                 return { ...topic, subTopics, progress: topicProgress };
             });
             const paperProgress = topics.length > 0 ? topics.reduce((acc, t) => acc + t.progress, 0) / topics.length : 0;
@@ -103,6 +111,13 @@ export function SyllabusMap() {
 
         return { papers, weakestTopic };
     }, [studyPlan]);
+
+    const getMasteryLevel = (progress: number) => {
+        if (progress === 100) return { level: "Mastered", color: "text-green-600" };
+        if (progress > 60) return { level: "Advanced", color: "text-blue-600" };
+        if (progress > 20) return { level: "Intermediate", color: "text-yellow-600" };
+        return { level: "Beginner", color: "text-red-600" };
+    };
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
@@ -131,7 +146,13 @@ export function SyllabusMap() {
                                     {paper.topics.map(topic => (
                                         <div key={topic.id} className="ml-4 my-4 p-4 border-l-2 border-electric-aqua/50 rounded-r-lg bg-ice-white">
                                             <h3 className="font-semibold text-lg">{topic.name}</h3>
-                                            {topic.subTopics.length > 0 && (
+                                            <div className="flex items-center space-x-2 my-2">
+                                                <Progress value={topic.progress} className="w-1/2" />
+                                                <span className={`text-sm font-medium ${getMasteryLevel(topic.progress).color}`}>
+                                                    {getMasteryLevel(topic.progress).level} ({topic.progress.toFixed(0)}%)
+                                                </span>
+                                            </div>
+                                            {topic.subTopics.length > 0 ? (
                                                 <div className="space-y-2 ml-6 mt-2">
                                                     {topic.subTopics.map(subTopic => (
                                                         <div key={subTopic.id} className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50">
@@ -142,9 +163,16 @@ export function SyllabusMap() {
                                                             <div className="flex items-center space-x-1">
                                                                 <Progress value={subTopic.progress} className="w-24 h-2" />
                                                                 <span className="text-xs text-gray-500 w-12 text-right">{subTopic.progress.toFixed(0)}%</span>
+                                                                <Button variant="ghost" size="sm" title="Go to Resources" onClick={() => navigateTo(FEATURES.CONTENT_HUB)}><Book className="h-4 w-4" /></Button>
+                                                                <Button variant="ghost" size="sm" title="Practice MCQs" onClick={() => navigateTo(FEATURES.MOCK_TESTS)}><Target className="h-4 w-4" /></Button>
                                                             </div>
                                                         </div>
                                                     ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center space-x-2 ml-6 mt-4">
+                                                    <Button variant="outline" size="sm" onClick={() => navigateTo(FEATURES.CONTENT_HUB)}><Book className="h-4 w-4 mr-2" />Study Material</Button>
+                                                    <Button variant="outline" size="sm" onClick={() => navigateTo(FEATURES.MOCK_TESTS)}><Target className="h-4 w-4 mr-2" />Practice</Button>
                                                 </div>
                                             )}
                                         </div>
