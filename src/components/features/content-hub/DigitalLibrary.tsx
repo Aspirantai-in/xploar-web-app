@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Book, Search, Upload, PlusCircle, ChevronLeft, Save } from 'lucide-react';
+import { Search, Upload, PlusCircle, ChevronLeft, Save } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { CuratedResource, UserNote } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 export function DigitalLibrary() {
     const { fetchCuratedResources, createUserNote } = useAppStore();
     const [resources, setResources] = useState<CuratedResource[]>([]);
-    const [userNotes, setUserNotes] = useState<UserNote[]>([]); // This would come from the store
+    const [userNotes] = useState<UserNote[]>([]); // This would come from the store
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [view, setView] = useState<'main' | 'create-note'>('main');

@@ -3,33 +3,10 @@ import { persist } from 'zustand/middleware';
 import {
     AppStore,
     AppState,
-    StudyConfig,
-    TaskID,
     TopicID,
-    MockRun,
     User,
     DateString,
-    CurrentAffairsArticle,
-    DailyQuiz,
     UserQuizAttempt,
-    CuratedResource,
-    UserNote,
-    NoteID,
-    FlashcardDeck,
-    Flashcard,
-    CardID,
-    AnswerSubmission,
-    PeerReview,
-    GroupID,
-    GroupChatMessage,
-    ForumPost,
-    ForumReply,
-    MentorProfile,
-    SessionID,
-    ISOString,
-    Webinar,
-    AIRecommendation,
-    RecommendationID,
     DeckID
 } from '@/lib/types';
 import { generateStudyPlan } from '@/lib/utils/planGenerator';
@@ -103,7 +80,7 @@ export const useAppStore = create<AppStore>()(
                     return { studyPlan: newPlan };
                 });
             },
-            deferTask: (taskId) => { /* ... implementation ... */ },
+            deferTask: (_taskId) => { /* ... implementation ... */ },
             updateStreak: () => { /* ... implementation ... */ },
             recordMcqResult: (topicId, correct, total) => {
                 set((state) => ({
@@ -118,10 +95,10 @@ export const useAppStore = create<AppStore>()(
 
             // --- DATA FETCHING & MUTATION ACTIONS ---
 
-            fetchCurrentAffairs: async (date: DateString) => {
+            fetchCurrentAffairs: async (_date: DateString) => {
                 return SAMPLE_CURRENT_AFFAIRS;
             },
-            fetchDailyQuiz: async (date: DateString) => {
+            fetchDailyQuiz: async (_date: DateString) => {
                 return SAMPLE_DAILY_QUIZ;
             },
             submitQuizAttempt: (attempt: UserQuizAttempt) => {

@@ -1,13 +1,13 @@
 'use client';
 import { motion } from 'framer-motion';
-import { TrendingUp, Calendar, Target, Clock } from 'lucide-react';
+import { TrendingUp, Target, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useAppStore } from '@/lib/store';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';
 
 export function ProgressSidebar() {
-    const { studyPlan, mcqPerformance, dailyStreak } = useAppStore();
+    const { studyPlan, dailyStreak } = useAppStore();
 
     const getTopicProgress = () => {
         const topicStats = UPSC_FOUNDATION.map(topic => {

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { MentorProfile, TopicID } from '@/lib/types';
@@ -77,7 +78,7 @@ export function FindMentor() {
                     >
                         <Card className="h-full flex flex-col hover:border-electric-aqua transition-colors duration-300">
                             <CardHeader className="items-center text-center">
-                                <img src={mentor.imageUrl} alt={mentor.name} className="w-24 h-24 rounded-full mb-4 border-4 border-white shadow-md" />
+                                <Image src={mentor.imageUrl} alt={mentor.name} width={96} height={96} className="w-24 h-24 rounded-full mb-4 border-4 border-white shadow-md" />
                                 <CardTitle className="text-lg">{mentor.name}</CardTitle>
                                 <CardDescription>{mentor.headline}</CardDescription>
                             </CardHeader>

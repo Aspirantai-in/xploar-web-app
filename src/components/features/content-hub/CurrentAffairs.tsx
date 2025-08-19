@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Newspaper, Calendar, CheckSquare, Brain } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { CurrentAffairsArticle, DailyQuiz, DailyQuizQuestion } from '@/lib/types';
+import { CurrentAffairsArticle, DailyQuiz } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getTodayString, formatDate } from '@/lib/utils/dateUtils';

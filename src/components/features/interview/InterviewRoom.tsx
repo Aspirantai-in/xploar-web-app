@@ -1,10 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Play, Square, Volume2 } from 'lucide-react';
+import { Mic, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { QuestionDisplay } from './QuestionDisplay';
 import { ResponseInput } from './ResponseInput';
 import { InterviewResults } from './InterviewResults';

@@ -1,8 +1,7 @@
 'use client';
-import { motion } from 'framer-motion';
 import { ChevronLeft, Users, Target, Send } from 'lucide-react';
 import { StudyGroup } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 

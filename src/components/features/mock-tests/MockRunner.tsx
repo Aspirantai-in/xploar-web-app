@@ -31,33 +31,6 @@ export function MockRunner({ topicId, useNegativeMarking, onComplete }: MockRunn
     const questions = MCQ_BANK[topicId]?.slice(0, APP_CONFIG.QUESTIONS_PER_MOCK) || [];
     const topic = UPSC_FOUNDATION.find(t => t.id === topicId);
 
-    useEffect(() => {
-        if (timeLeft > 0 && !isSubmitted) {
-            const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-            return () => clearTimeout(timer);
-        } else if (timeLeft === 0 && !isSubmitted) {
-            handleSubmit();
-        }
-    }, [timeLeft, isSubmitted]);
-
-    const formatTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-
-        if (hours > 0) {
-            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        return `${minutes}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleAnswer = (questionIndex: number, answerIndex: number) => {
-        setAnswers(prev => ({
-            ...prev,
-            [questionIndex.toString()]: answerIndex
-        }));
-    };
-
     const handleSubmit = () => {
         const score = calculateMockScore(questions, answers, useNegativeMarking);
         const timeTaken = APP_CONFIG.MOCK_TEST_DURATION - Math.floor(timeLeft / 60);
@@ -75,6 +48,33 @@ export function MockRunner({ topicId, useNegativeMarking, onComplete }: MockRunn
         saveMockTest(mockRun);
         setIsSubmitted(true);
         setShowResults(true);
+    };
+
+    useEffect(() => {
+        if (timeLeft > 0 && !isSubmitted) {
+            const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+            return () => clearTimeout(timer);
+        } else if (timeLeft === 0 && !isSubmitted) {
+            handleSubmit();
+        }
+    }, [timeLeft, isSubmitted, handleSubmit]);
+
+    const formatTime = (seconds: number) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleAnswer = (questionIndex: number, answerIndex: number) => {
+        setAnswers(prev => ({
+            ...prev,
+            [questionIndex.toString()]: answerIndex
+        }));
     };
 
     const progress = ((currentQuestion + 1) / questions.length) * 100;

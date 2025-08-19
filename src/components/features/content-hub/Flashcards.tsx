@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BrainCircuit, Layers, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { Layers, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Flashcard, FlashcardDeck } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

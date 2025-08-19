@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Trophy, Clock, Target, CheckCircle, XCircle, ArrowLeft, RotateCcw } from 'lucide-react';
+import { Trophy, CheckCircle, XCircle, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';

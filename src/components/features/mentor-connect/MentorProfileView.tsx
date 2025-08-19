@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { ChevronLeft, Calendar, CheckCircle } from 'lucide-react';
 import { MentorProfile, ISOString } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,7 @@ export function MentorProfileView({ mentor, onBack }: MentorProfileViewProps) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center space-x-4">
-                            <img src={mentor.imageUrl} alt={mentor.name} className="w-16 h-16 rounded-full" />
+                            <Image src={mentor.imageUrl} alt={mentor.name} width={64} height={64} className="w-16 h-16 rounded-full" />
                             <div>
                                 <p><strong>Mentor:</strong> {mentor.name}</p>
                                 <p className="text-sm text-void-black/70">{mentor.headline}</p>
@@ -91,7 +92,7 @@ export function MentorProfileView({ mentor, onBack }: MentorProfileViewProps) {
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center space-x-6">
-                            <img src={mentor.imageUrl} alt={mentor.name} className="w-28 h-28 rounded-full border-4 border-white shadow-lg" />
+                            <Image src={mentor.imageUrl} alt={mentor.name} width={112} height={112} className="w-28 h-28 rounded-full border-4 border-white shadow-lg" />
                             <div>
                                 <CardTitle className="text-3xl">{mentor.name}</CardTitle>
                                 <CardDescription className="text-base">{mentor.headline}</CardDescription>

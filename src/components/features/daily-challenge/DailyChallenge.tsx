@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Newspaper, Brain, Target, CheckCircle, Circle, BrainCircuit } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -102,7 +102,6 @@ export function DailyChallenge() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {tasks.map((task, index) => {
-                        const Icon = task.icon;
                         return (
                             <motion.div
                                 key={task.id}

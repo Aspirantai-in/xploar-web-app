@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Trophy, Award, Star } from 'lucide-react';
+import { Trophy, Star } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Dummy data for the leaderboard

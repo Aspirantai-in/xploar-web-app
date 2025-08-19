@@ -1,7 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Map, CheckCircle, ChevronDown, Book, Target, TrendingUp, AlertTriangle, Lightbulb, Layers } from 'lucide-react';
+import { CheckCircle, ChevronDown, Book, Target, AlertTriangle, Lightbulb, Layers } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UPSC_SYLLABUS, SyllabusSubTopic } from '@/lib/data/syllabus';
@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { FEATURES } from '@/lib/utils/constants';
 
 // Helper to calculate progress
-const calculateProgress = (ids: string[], studyPlan: any[]) => {
+const calculateProgress = (ids: string[], studyPlan: { tasks: { topicId: string; isDone: boolean }[] }[]) => {
     const relevantTasks = studyPlan.flatMap(day => day.tasks).filter(task => ids.includes(task.topicId));
     if (relevantTasks.length === 0) return 0;
     const completedTasks = relevantTasks.filter(task => task.isDone).length;
@@ -78,7 +78,7 @@ export function SyllabusMap() {
     const [expandedPaper, setExpandedPaper] = useState<string | null>("Prelims GS-I");
 
     const { papers, weakestTopic } = useMemo(() => {
-        let allSubTopics: (SyllabusSubTopic & { progress: number })[] = [];
+        const allSubTopics: (SyllabusSubTopic & { progress: number })[] = [];
 
         const papers = Object.entries(UPSC_SYLLABUS).map(([paperKey, paperData]) => {
             const topics = paperData.topics.map(topic => {

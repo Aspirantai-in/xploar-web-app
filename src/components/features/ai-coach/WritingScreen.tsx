@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Clock, Upload, Send, Image as ImageIcon } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
+import { Clock, Upload, Send } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EssayGenre } from './AIEvaluation';
 
@@ -26,7 +26,7 @@ export function WritingScreen({ genre, question, onSubmit }: WritingScreenProps)
         } else {
             handleSubmit();
         }
-    }, [timeLeft]);
+    }, [timeLeft, handleSubmit]);
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -89,7 +89,7 @@ export function WritingScreen({ genre, question, onSubmit }: WritingScreenProps)
                     {image && (
                         <div className="mt-4">
                             <p className="text-sm font-medium mb-2">Attached Image:</p>
-                            <img src={image} alt="Uploaded diagram" className="max-w-xs rounded-lg border" />
+                            <Image src={image} alt="Uploaded diagram" width={300} height={200} className="max-w-xs rounded-lg border" />
                         </div>
                     )}
                 </CardContent>

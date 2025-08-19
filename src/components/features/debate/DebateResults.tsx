@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import { Trophy, MessageSquare, Clock, Target, ArrowLeft, RotateCcw, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
 interface DebateResultsProps {

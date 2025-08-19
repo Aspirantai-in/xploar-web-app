@@ -1,7 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
 import {
-    BookOpen,
     Target,
     MessageCircle,
     Mic,
@@ -10,7 +9,7 @@ import {
     Trophy,
     Settings,
     ChevronRight,
-    Menu, ChevronLeft,
+    ChevronLeft,
     Users,
     UserCheck,
     Lightbulb,

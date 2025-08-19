@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserCheck, Video, Calendar } from 'lucide-react';
+import { UserCheck, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, } from '@/components/ui/card';
 import { FindMentor } from './FindMentor';

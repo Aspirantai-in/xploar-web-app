@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, Bot, User, Clock, Flag } from 'lucide-react';
+import { MessageSquare, Send, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,8 +84,7 @@ export function DebateRoom() {
         }, 1500);
     };
 
-    const generateAIResponse = (topic: string, position: 'for' | 'against', history: Message[]) => {
-        const aiPosition = position === 'for' ? 'against' : 'for';
+    const generateAIResponse = (topic: string, _position: 'for' | 'against', _history: Message[]) => {
 
         const responses = [
             `I respectfully disagree with your stance on "${topic}". Let me present a counterargument...`,

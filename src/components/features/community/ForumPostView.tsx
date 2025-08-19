@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, MessageSquare, Send } from 'lucide-react';
+import { ChevronLeft, Send } from 'lucide-react';
 import { ForumPost, ForumReply } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

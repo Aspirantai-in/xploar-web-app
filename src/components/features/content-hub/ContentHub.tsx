@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Library, Newspaper, Book, Film, BrainCircuit } from 'lucide-react';
+import { Newspaper, Book, BrainCircuit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { CurrentAffairs } from './CurrentAffairs';
 import { DigitalLibrary } from './DigitalLibrary';
 import { Flashcards } from './Flashcards';

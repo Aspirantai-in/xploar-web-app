@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { User, Crown, Search, Settings, LogOut, RotateCcw, Sparkles } from 'lucide-react';
+import { User, Crown, Search, Settings, LogOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
@@ -11,9 +12,7 @@ export function Header() {
     const {
         currentUser,
         isProUser,
-        userRole,
         signOut,
-        upgradeToPro,
         switchRole,
         navigateTo,
         resetApplicationState
@@ -44,9 +43,11 @@ export function Header() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    <img
+                    <Image
                         src="/Xploar_logo.png"
                         alt="xploar.ai logo"
+                        width={120}
+                        height={40}
                         className="h-10 w-30"
                     />
                 </motion.div>

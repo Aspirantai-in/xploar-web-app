@@ -60,7 +60,7 @@ const CongratulationsScreen = () => {
 
 
 export function PricingPage() {
-    const { upgradeToPro, isProUser, navigateTo } = useAppStore();
+    const { upgradeToPro, isProUser } = useAppStore();
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [view, setView] = useState<'pricing' | 'congratulations'>('pricing');
 

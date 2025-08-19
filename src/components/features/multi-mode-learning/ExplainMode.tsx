@@ -6,7 +6,7 @@ import { RubricCard } from './RubricCard';
 import { Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export function ExplainMode({ topicId }: { topicId: string }) {
+export function ExplainMode({ topicId: _topicId }: { topicId: string }) {
     const [explanation, setExplanation] = useState('');
     const [feedback, setFeedback] = useState<string[] | null>(null);
 

@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { TrendingUp, Calendar, Target, Clock, Trophy, BookOpen } from 'lucide-react';
+import { TrendingUp, Target, Clock, Trophy, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useAppStore } from '@/lib/store';
@@ -8,7 +8,7 @@ import { UPSC_FOUNDATION } from '@/lib/data/topics';
 import { formatDate } from '@/lib/utils/dateUtils';
 
 export function ProgressDashboard() {
-    const { studyPlan, mockTestHistory, dailyStreak, mcqPerformance } = useAppStore();
+    const { studyPlan, mockTestHistory, dailyStreak } = useAppStore();
 
     // Calculate overall statistics
     const totalTasks = studyPlan.reduce((acc, day) => acc + day.tasks.length, 0);

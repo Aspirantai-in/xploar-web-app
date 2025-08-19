@@ -1,7 +1,7 @@
 'use client';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Target, Clock, TrendingUp, BookOpen } from 'lucide-react';
+import { Target, Clock, TrendingUp, BookOpen } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';

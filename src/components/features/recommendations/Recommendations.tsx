@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, CheckCircle, BarChart2, FileText, BookOpen, Target, Video } from 'lucide-react';
+import { Lightbulb, FileText, BookOpen, Target, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppStore } from '@/lib/store';
@@ -12,7 +12,7 @@ import { SAMPLE_CURATED_RESOURCES } from '@/lib/data/extended-data';
 
 // A new, more detailed component for displaying a single recommendation
 function RecommendationCard({ recommendation }: { recommendation: AIRecommendation }) {
-    const { markRecommendationAsDone, navigateTo } = useAppStore();
+    const { markRecommendationAsDone } = useAppStore();
 
     // Icons for different recommendation types
     const ICONS = {
