@@ -20,6 +20,9 @@ import { MentorConnect } from '@/components/features/mentor-connect/MentorConnec
 import { Recommendations } from '@/components/features/recommendations/Recommendations';
 import { SyllabusMap } from '@/components/features/syllabus/SyllabusMap';
 import { DailyChallenge } from '@/components/features/daily-challenge/DailyChallenge';
+import { AIEvaluation } from '@/components/features/ai-coach/AIEvaluation';
+import { PricingPage } from '@/components/features/pricing/PricingPage';
+import { MultiModeLearning } from '@/components/features/multi-mode-learning/MultiModeLearning';
 
 
 interface MainLayoutProps {
@@ -30,7 +33,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     const { activeFeature, currentUser } = useAppStore();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-    // CORRECTED: This logic now ensures the main app layout only shows AFTER onboarding.
     const showAppLayout = currentUser && activeFeature !== FEATURES.ONBOARDING;
 
     const renderFeature = () => {
@@ -61,6 +63,12 @@ export function MainLayout({ children }: MainLayoutProps) {
                 return <SyllabusMap />;
             case FEATURES.DAILY_CHALLENGE:
                 return <DailyChallenge />;
+            case FEATURES.AI_COACH:
+                return <AIEvaluation />;
+            case FEATURES.PRICING:
+                return <PricingPage />;
+            case FEATURES.MULTI_MODE_LEARNING:
+                return <MultiModeLearning />;
             default:
                 return currentUser ? <StudyPlanner /> : <OnboardingFlow />;
         }
@@ -68,15 +76,11 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-ice-white via-ice-white to-electric-aqua/5">
-            {/* Header is now conditionally rendered */}
             {showAppLayout && <Header />}
 
-            {/* Main Content Area */}
             <div className="flex">
-                {/* Sidebar is now conditionally rendered */}
                 {showAppLayout && <Sidebar onCollapseChange={setSidebarCollapsed} />}
 
-                {/* Main Content margin adjusts based on whether the app layout is shown */}
                 <main className={`flex-1 transition-all duration-300 ${showAppLayout ? (sidebarCollapsed ? 'ml-[5.5rem]' : 'ml-64') : ''
                     }`}>
                     <AnimatePresence mode="wait">
@@ -89,7 +93,6 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 duration: 0.3,
                                 ease: "easeInOut"
                             }}
-                            // The min-height is adjusted to account for the header's presence or absence
                             className={showAppLayout ? "min-h-[calc(100vh-4rem)]" : "min-h-screen"}
                         >
                             {renderFeature()}
@@ -99,9 +102,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 </main>
             </div>
 
-            {/* Background Elements */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-                {/* Animated background shapes */}
                 <motion.div
                     className="absolute -top-40 -right-40 w-80 h-80 bg-electric-aqua/10 rounded-full blur-3xl"
                     animate={{

@@ -1,8 +1,12 @@
 import { TopicID } from '@/lib/types';
 
+export type TopicWeight = 'High' | 'Medium' | 'Low';
+
 export interface SyllabusSubTopic {
     id: TopicID;
     name: string;
+    weight: TopicWeight;
+    why: string; // Why this topic is important for the exam
 }
 
 export interface SyllabusTopic {
@@ -23,31 +27,31 @@ export const UPSC_SYLLABUS: Record<string, SyllabusPaper> = {
             {
                 id: "history", name: "History of India and Indian National Movement",
                 subTopics: [
-                    { id: "history_ivc", name: "Indus Valley Civilization" },
-                    { id: "history_vedic", name: "Vedic Period" },
-                    { id: "history_modern", name: "Modern Indian History (1757-1947)" }
+                    { id: "history_ivc", name: "Indus Valley Civilization", weight: 'Medium', why: 'Forms the basis of ancient history; questions often appear on art and culture.' },
+                    { id: "history_vedic", name: "Vedic Period", weight: 'Medium', why: 'Crucial for understanding social and religious evolution in ancient India.' },
+                    { id: "history_modern", name: "Modern Indian History (1757-1947)", weight: 'High', why: 'A significant portion of the history questions in Prelims and Mains come from this area.' }
                 ]
             },
             {
                 id: "polity", name: "Indian Polity and Governance",
                 subTopics: [
-                    { id: "polity_preamble", name: "Preamble & Features of Constitution" },
-                    { id: "polity_fr", name: "Fundamental Rights & Duties" },
-                    { id: "polity_parliament", name: "Parliament and State Legislatures" }
+                    { id: "polity_preamble", name: "Preamble & Features of Constitution", weight: 'Medium', why: 'Core philosophical foundation of the Indian constitution; essential for essay and ethics papers.' },
+                    { id: "polity_fr", name: "Fundamental Rights & Duties", weight: 'High', why: 'Frequently tested area in both Prelims and Mains, forms the bedrock of Indian democracy.' },
+                    { id: "polity_parliament", name: "Parliament and State Legislatures", weight: 'High', why: 'Understanding the functioning of the legislature is critical for governance questions.' }
                 ]
             },
             {
                 id: "geography", name: "Indian and World Geography",
                 subTopics: [
-                    { id: "geog_physical", name: "Physical Geography" },
-                    { id: "geog_monsoon", name: "Indian Monsoon System" },
+                    { id: "geog_physical", name: "Physical Geography", weight: 'Medium', why: 'Fundamental concepts that apply across various environmental and geographical topics.' },
+                    { id: "geog_monsoon", name: "Indian Monsoon System", weight: 'High', why: 'Directly impacts Indian economy and agriculture; a favorite topic for Mains.' },
                 ]
             },
             {
                 id: "economy", name: "Economic and Social Development",
                 subTopics: [
-                    { id: "econ_fiscal", name: "Fiscal Policy" },
-                    { id: "econ_banking", name: "Banking & Monetary Policy" },
+                    { id: "econ_fiscal", name: "Fiscal Policy", weight: 'High', why: 'Core of economic policy, directly related to budget, taxation, and government spending.' },
+                    { id: "econ_banking", name: "Banking & Monetary Policy", weight: 'High', why: 'Crucial for understanding inflation, banking reforms, and RBI\'s role.' },
                 ]
             },
         ]

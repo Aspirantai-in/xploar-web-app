@@ -303,6 +303,7 @@ export interface AppActions {
     signIn: (email: string, name: string) => void;
     signOut: () => void;
     upgradeToPro: () => void;
+    downgradeFromPro: () => void; // Added this action
     switchRole: () => void;
     navigateTo: (feature: string) => void;
     updateStudyConfig: (config: Partial<StudyConfig>) => void;

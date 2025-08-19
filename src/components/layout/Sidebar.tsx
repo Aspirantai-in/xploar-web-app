@@ -16,7 +16,9 @@ import {
     Lightbulb,
     Library,
     Map,
-    ShieldCheck
+    ShieldCheck,
+    PenSquare,
+    Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
@@ -36,6 +38,12 @@ const navigationItems = [
         description: 'Daily tasks & schedule'
     },
     {
+        feature: FEATURES.MULTI_MODE_LEARNING,
+        label: 'Learning Hub',
+        icon: Layers,
+        description: 'Multi-mode learning'
+    },
+    {
         feature: FEATURES.SYLLABUS,
         label: 'Syllabus',
         icon: Map,
@@ -46,6 +54,12 @@ const navigationItems = [
         label: 'Daily Challenge',
         icon: ShieldCheck,
         description: '100 problems a day'
+    },
+    {
+        feature: FEATURES.AI_COACH,
+        label: 'AI Coach',
+        icon: PenSquare,
+        description: 'Essay evaluation'
     },
     {
         feature: FEATURES.CONTENT_HUB,
@@ -110,7 +124,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
 
     if (!currentUser) return null;
 
-    // Calculate study plan progress
     const totalTasks = studyPlan.reduce((acc, day) => acc + day.tasks.length, 0);
     const completedTasks = studyPlan.reduce((acc, day) =>
         acc + day.tasks.filter(task => task.isDone).length, 0
@@ -130,7 +143,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
             transition={{ duration: 0.3 }}
         >
             <div className="flex flex-col h-full p-4">
-                {/* User Welcome */}
                 <div className="p-2 border-b border-dark-blue/15">
                     <Button
                         variant="default"
@@ -173,8 +185,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                     </motion.div>
                 )}
 
-
-                {/* Navigation */}
                 <nav className="flex-1 space-y-2">
                     <div className="mb-4">
                         <h4 className="text-xs font-semibold text-void-black/50 uppercase tracking-wide mb-2">
@@ -243,7 +253,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                     })}
                 </nav>
 
-                {/* Quick Stats */}
                 {!isCollapsed && (
                     <div className="mt-6 space-y-4">
                         <div className="p-3 bg-dark-blue/10 rounded-lg">
@@ -276,7 +285,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                             </div>
                         </div>
 
-                        {/* Motivational Quote */}
                         <motion.div
                             className="p-3 bg-dark-blue/10 rounded-lg border border-dark-blue/20"
                             animate={{
@@ -294,13 +302,12 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                             </div>
                         </motion.div>
 
-                        {/* Pro Upgrade CTA */}
                         {!useAppStore.getState().isProUser && (
                             <motion.div
                                 className="p-3 bg-dark-blue text-ice-white rounded-lg text-center cursor-pointer"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={() => useAppStore.getState().upgradeToPro()}
+                                onClick={() => useAppStore.getState().navigateTo(FEATURES.PRICING)}
                             >
                                 <div className="flex items-center justify-center space-x-2 mb-2">
                                     <Trophy className="h-4 w-4 text-ice-white" />
@@ -314,7 +321,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                     </div>
                 )}
 
-                {/* Footer */}
                 {!isCollapsed && (
                     <div className="mt-4 pt-4 border-t border-dark-blue/15">
                         <div className="text-center">

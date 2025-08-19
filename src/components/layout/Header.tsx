@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Crown, Search, Settings, LogOut, RotateCcw } from 'lucide-react';
+import { User, Crown, Search, Settings, LogOut, RotateCcw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
@@ -44,8 +44,8 @@ export function Header() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    <div className="h-8 w-8 rounded-lg flex items-center justify-center">
-                        <span className="text-void-black font-bold text-lg">X</span>
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-dark-blue">
+                        <Sparkles className="h-5 w-5 text-ice-white" />
                     </div>
                     <h1 className="text-xl font-bold bg-clip-text text-dark-blue">
                         xploar.ai
@@ -71,8 +71,8 @@ export function Header() {
                 <div className="flex items-center space-x-2">
                     {currentUser ? (
                         <>
-                            {/* Pro Badge */}
-                            {isProUser && (
+                            {/* Pro Badge / Upgrade Button */}
+                            {isProUser ? (
                                 <motion.div
                                     className="flex items-center space-x-1 bg-gradient-flow px-2 py-1 rounded-full"
                                     animate={{ scale: [1, 1.05, 1] }}
@@ -81,12 +81,17 @@ export function Header() {
                                     <Crown className="h-4 w-4 text-void-black" />
                                     <span className="text-xs font-semibold text-void-black">PRO</span>
                                 </motion.div>
+                            ) : (
+                                <Button
+                                    variant="gradient"
+                                    size="sm"
+                                    onClick={() => navigateTo(FEATURES.PRICING)}
+                                    className="h-8"
+                                >
+                                    <Crown className="h-4 w-4 mr-2" />
+                                    Upgrade
+                                </Button>
                             )}
-
-                            {/* User Role Badge */}
-                            <div className="px-2 py-1 bg-cosmic-indigo text-ice-white rounded-full text-xs font-medium capitalize">
-                                {userRole}
-                            </div>
 
                             {/* User Menu */}
                             <div className="flex items-center space-x-1">
@@ -108,17 +113,6 @@ export function Header() {
                                 >
                                     <User className="h-4 w-4" />
                                 </Button>
-
-                                {!isProUser && (
-                                    <Button
-                                        variant="gradient"
-                                        size="sm"
-                                        onClick={upgradeToPro}
-                                        className="h-8"
-                                    >
-                                        Upgrade
-                                    </Button>
-                                )}
 
                                 <Button
                                     variant="ghost"

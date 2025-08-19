@@ -22,6 +22,10 @@ export const FEATURES = {
     RECOMMENDATIONS: 'recommendations',
     SYLLABUS: 'syllabus',
     DAILY_CHALLENGE: 'daily-challenge',
+    AI_COACH: 'ai-coach',
+    PRICING: 'pricing',
+    // New Feature
+    MULTI_MODE_LEARNING: 'multi-mode-learning',
 } as const;
 
 export const TASK_TYPES = {
