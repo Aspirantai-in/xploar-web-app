@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { Users, MessageSquare, Edit, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DiscussionForums } from './DiscussionForums';
+import { PeerReview } from './PeerReview';
+import { StudyGroups } from './StudyGroups';
 
 type ActiveTab = 'forums' | 'groups' | 'reviews';
 
@@ -65,8 +68,3 @@ export function CommunityHub() {
         </div>
     );
 }
-
-// Create dummy components for now
-const DiscussionForums = () => <Card><CardHeader><CardTitle>Discussion Forums</CardTitle></CardHeader><CardContent><p>Forums will be displayed here.</p></CardContent></Card>;
-const StudyGroups = () => <Card><CardHeader><CardTitle>Study Groups</CardTitle></CardHeader><CardContent><p>Study groups will be displayed here.</p></CardContent></Card>;
-const PeerReview = () => <Card><CardHeader><CardTitle>Peer Review</CardTitle></CardHeader><CardContent><p>Peer review content will be displayed here.</p></CardContent></Card>;
