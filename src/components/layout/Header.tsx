@@ -44,12 +44,11 @@ export function Header() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-dark-blue">
-                        <Sparkles className="h-5 w-5 text-ice-white" />
-                    </div>
-                    <h1 className="text-xl font-bold bg-clip-text text-dark-blue">
-                        xploar.ai
-                    </h1>
+                    <img
+                        src="/Xploar_logo.png"
+                        alt="xploar.ai logo"
+                        className="h-10  w-30 "
+                    />
                 </motion.div>
 
                 {/* Search Bar */}
