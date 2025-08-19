@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { PlusCircle, ChevronLeft, Send } from 'lucide-react';
+import { PlusCircle, ChevronLeft } from 'lucide-react';
 import { SAMPLE_STUDY_GROUPS } from '@/lib/data/extended-data';
 import { StudyGroup } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

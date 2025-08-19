@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Clock, Upload, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,10 @@ export function WritingScreen({ genre, question, onSubmit }: WritingScreenProps)
     const [timeLeft, setTimeLeft] = useState(TEST_DURATION_SECONDS);
     const [image, setImage] = useState<string | null>(null);
 
+    const handleSubmit = useCallback(() => {
+        onSubmit(essay);
+    }, [essay, onSubmit]);
+
     useEffect(() => {
         if (timeLeft > 0) {
             const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -37,10 +41,6 @@ export function WritingScreen({ genre, question, onSubmit }: WritingScreenProps)
     const handleImageUpload = () => {
         // This is a fake upload for the demo
         setImage("https://placehold.co/600x400/eee/ccc?text=Your+Diagram");
-    };
-
-    const handleSubmit = () => {
-        onSubmit(essay);
     };
 
     return (
