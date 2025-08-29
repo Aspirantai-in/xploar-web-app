@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, FileText, BookOpen, Target, Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAppStore } from '@/lib/store';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';
 import { WeeklyReport } from './WeeklyReport';

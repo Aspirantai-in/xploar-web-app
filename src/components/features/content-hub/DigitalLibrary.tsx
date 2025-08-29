@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import { Search, Upload, PlusCircle, ChevronLeft, Save } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { CuratedResource, UserNote } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export function DigitalLibrary() {

@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Newspaper, Book, BrainCircuit } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { CurrentAffairs } from './CurrentAffairs';
 import { DigitalLibrary } from './DigitalLibrary';
 import { Flashcards } from './Flashcards';

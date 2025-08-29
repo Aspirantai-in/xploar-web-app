@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { AuthProvider } from '@/lib/context/auth-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,9 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} antialiased`}>
-        <MainLayout>
+        <AuthProvider>
           {children}
-        </MainLayout>
+        </AuthProvider>
       </body>
     </html>
   );

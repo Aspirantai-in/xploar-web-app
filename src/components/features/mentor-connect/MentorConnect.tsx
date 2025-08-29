@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { UserCheck, Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, } from '@/components/ui/Card';
 import { FindMentor } from './FindMentor';
 import { Webinars } from './Webinars';
 

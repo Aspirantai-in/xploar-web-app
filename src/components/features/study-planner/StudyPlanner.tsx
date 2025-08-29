@@ -1,9 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Progress } from '@/components/ui/Progress';
 import { DayView } from './DayView';
 import { PomodoroTimer } from './PomodoroTimer';
 import { ProgressSidebar } from './ProgressSidebar';

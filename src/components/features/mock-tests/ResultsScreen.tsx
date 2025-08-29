@@ -1,9 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Trophy, CheckCircle, XCircle, ArrowLeft, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
 import { QuestionCard } from './QuestionCard';
 import { Question } from '@/lib/types';
 import { calculateMockScore, calculateAccuracy, getPerformanceLevel } from '@/lib/utils/scoreCalculator';

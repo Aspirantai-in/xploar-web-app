@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, Square, Timer } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
 import { APP_CONFIG } from '@/lib/utils/constants';
 
 export function PomodoroTimer() {

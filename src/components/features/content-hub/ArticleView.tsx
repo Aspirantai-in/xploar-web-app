@@ -2,8 +2,8 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, Calendar } from 'lucide-react';
 import { CurrentAffairsArticle } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { formatDate } from '@/lib/utils/dateUtils';
 
 interface ArticleViewProps {

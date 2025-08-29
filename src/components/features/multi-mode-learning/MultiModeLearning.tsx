@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, BookOpen, Video, Target, MessageSquare, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Button } from '@/components/ui/Button';
 import { TopicID } from '@/lib/types';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';
 import { ReadMode } from './ReadMode';

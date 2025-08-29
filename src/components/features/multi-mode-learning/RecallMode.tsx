@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { RubricCard } from './RubricCard';
 import { SAMPLE_FLASHCARDS } from '@/lib/data/extended-data';
 import { TopicID } from '@/lib/types';

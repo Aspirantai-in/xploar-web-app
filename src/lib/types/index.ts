@@ -345,3 +345,6 @@ export interface AppActions {
 }
 
 export type AppStore = AppState & AppActions;
+
+// Re-export auth types
+export * from './auth';

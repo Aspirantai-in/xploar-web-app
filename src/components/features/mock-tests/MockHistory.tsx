@@ -1,9 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Clock, Trophy, Target, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
 import { useAppStore } from '@/lib/store';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';
 import { formatDate } from '@/lib/utils/dateUtils';

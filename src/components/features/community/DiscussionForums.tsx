@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { MessageSquare, PlusCircle } from 'lucide-react';
 import { SAMPLE_FORUM_POSTS } from '@/lib/data/extended-data';
 import { ForumPost } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { ForumPostView } from './ForumPostView';
 
 export function DiscussionForums() {

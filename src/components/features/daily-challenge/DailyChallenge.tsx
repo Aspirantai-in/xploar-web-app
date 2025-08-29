@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Newspaper, Brain, Target, CheckCircle, Circle, BrainCircuit } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Progress } from '@/components/ui/Progress';
 import { useAppStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { FEATURES } from '@/lib/utils/constants';

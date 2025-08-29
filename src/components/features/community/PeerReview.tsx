@@ -2,9 +2,9 @@
 import { useState } from 'react';
 
 import { Edit, Upload, ChevronLeft, Send } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { AnswerSubmission } from '@/lib/types';
 import { useAppStore } from '@/lib/store';
 

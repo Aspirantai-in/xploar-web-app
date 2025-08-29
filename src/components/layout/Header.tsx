@@ -3,8 +3,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { User, Crown, Search, Settings, LogOut, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/lib/store';
 import { FEATURES } from '@/lib/utils/constants';
 

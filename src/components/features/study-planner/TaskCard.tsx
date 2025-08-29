@@ -10,8 +10,8 @@ import {
     RotateCcw,
     Calendar
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Task } from '@/lib/types';
 import { useAppStore } from '@/lib/store';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';

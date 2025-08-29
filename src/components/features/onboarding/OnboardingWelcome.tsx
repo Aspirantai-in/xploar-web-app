@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Hand, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/lib/store';
 
 interface OnboardingWelcomeProps {

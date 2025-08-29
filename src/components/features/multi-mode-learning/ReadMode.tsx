@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { RubricCard } from './RubricCard';
 
 export function ReadMode({ topicId }: { topicId: string }) {

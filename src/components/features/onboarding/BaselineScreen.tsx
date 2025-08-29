@@ -1,23 +1,43 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 
 interface BaselineScreenProps {
     onNext: () => void;
+    // New props for external data control
+    externalData?: {
+        difficultyLevel?: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
+    };
+    onDataUpdate?: (data: { difficultyLevel?: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" }) => void;
 }
 
 const levels = [
-    { id: 'beginner', title: 'Just Starting', desc: 'I am new to UPSC preparation.' },
-    { id: 'intermediate', title: 'Have Covered Basics', desc: 'I have gone through the syllabus once.' },
-    { id: 'advanced', title: 'Advanced Revision', desc: 'I am focused on revision and test-taking.' },
+    { id: 'BEGINNER', title: 'Just Starting', desc: 'I am new to UPSC preparation.', icon: '🌱' },
+    { id: 'INTERMEDIATE', title: 'Have Covered Basics', desc: 'I have gone through the syllabus once.', icon: '📚' },
+    { id: 'ADVANCED', title: 'Advanced Revision', desc: 'I am focused on revision and test-taking.', icon: '🎯' },
+    { id: 'EXPERT', title: 'Expert Level', desc: 'I am at master level, need advanced strategies.', icon: '🏆' },
 ];
 
-export function BaselineScreen({ onNext }: BaselineScreenProps) {
-    const [selectedLevel, setSelectedLevel] = useState('');
+export function BaselineScreen({ onNext, externalData, onDataUpdate }: BaselineScreenProps) {
+    const [selectedLevel, setSelectedLevel] = useState(externalData?.difficultyLevel || '');
+
+    // Sync with external data
+    useEffect(() => {
+        if (externalData?.difficultyLevel) {
+            setSelectedLevel(externalData.difficultyLevel);
+        }
+    }, [externalData?.difficultyLevel]);
+
+    const handleLevelSelect = (levelId: string) => {
+        setSelectedLevel(levelId);
+        if (onDataUpdate) {
+            onDataUpdate({ difficultyLevel: levelId as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" });
+        }
+    };
 
     return (
         <div className="max-w-2xl text-center">
@@ -38,11 +58,16 @@ export function BaselineScreen({ onNext }: BaselineScreenProps) {
                                 "cursor-pointer transition-all border-2",
                                 selectedLevel === level.id ? "border-electric-aqua bg-electric-aqua/10" : "hover:border-electric-aqua/50"
                             )}
-                            onClick={() => setSelectedLevel(level.id)}
+                            onClick={() => handleLevelSelect(level.id)}
                         >
                             <CardContent className="p-6 text-left">
-                                <h3 className="font-semibold">{level.title}</h3>
-                                <p className="text-sm text-void-black/70">{level.desc}</p>
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-2xl">{level.icon}</span>
+                                    <div>
+                                        <h3 className="font-semibold">{level.title}</h3>
+                                        <p className="text-sm text-void-black/70">{level.desc}</p>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </motion.div>

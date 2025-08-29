@@ -1,8 +1,8 @@
 'use client';
 import { motion } from 'framer-motion';
 import { TrendingUp, Target, Clock, Trophy, BookOpen } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
 import { useAppStore } from '@/lib/store';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';
 import { formatDate } from '@/lib/utils/dateUtils';

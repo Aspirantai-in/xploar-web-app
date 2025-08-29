@@ -3,10 +3,10 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, ChevronDown, Book, Target, AlertTriangle, Lightbulb, Layers } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { UPSC_SYLLABUS, SyllabusSubTopic } from '@/lib/data/syllabus';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/Progress';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { FEATURES } from '@/lib/utils/constants';
 

@@ -1,8 +1,8 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 interface QuestionDisplayProps {
     question: string;

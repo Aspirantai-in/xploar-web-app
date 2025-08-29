@@ -19,7 +19,7 @@ import {
     PenSquare,
     Layers
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/lib/store';
 import { FEATURES } from '@/lib/utils/constants';
 import { cn } from '@/lib/utils';

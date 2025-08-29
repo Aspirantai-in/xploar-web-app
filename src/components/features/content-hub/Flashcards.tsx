@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { Layers, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Flashcard, FlashcardDeck } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export function Flashcards() {

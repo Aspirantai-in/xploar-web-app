@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Clock, Trophy, Play, History } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { MockRunner } from './MockRunner';
 import { MockHistory } from './MockHistory';
 import { useAppStore } from '@/lib/store';

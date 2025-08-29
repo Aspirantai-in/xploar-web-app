@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import { PlusCircle, ChevronLeft } from 'lucide-react';
 import { SAMPLE_STUDY_GROUPS } from '@/lib/data/extended-data';
 import { StudyGroup } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { StudyGroupView } from './StudyGroupView';
 import { useAppStore } from '@/lib/store';
 

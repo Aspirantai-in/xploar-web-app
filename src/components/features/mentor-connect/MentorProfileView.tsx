@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Calendar, CheckCircle } from 'lucide-react';
 import { MentorProfile, ISOString } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/lib/store';
 import { UPSC_FOUNDATION } from '@/lib/data/topics';
 

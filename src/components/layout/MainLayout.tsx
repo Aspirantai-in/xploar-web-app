@@ -37,8 +37,6 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     const renderFeature = () => {
         switch (activeFeature) {
-            case FEATURES.ONBOARDING:
-                return <OnboardingFlow />;
             case FEATURES.STUDY_PLANNER:
                 return <StudyPlanner />;
             case FEATURES.MOCK_TESTS:

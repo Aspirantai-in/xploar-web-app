@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Question } from '@/lib/types';
 import { cn } from '@/lib/utils';
 

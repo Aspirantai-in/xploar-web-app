@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Calendar, Clock } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { TaskCard } from './TaskCard';
 import { PlanDay } from '@/lib/types';
 import { formatDate } from '@/lib/utils/dateUtils';
