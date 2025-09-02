@@ -1,30 +1,36 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Calendar, Target, Clock, CheckCircle, Play, Pause, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, Calendar, CheckCircle, Play, Pause, X } from 'lucide-react';
 import { useStudyPlanner } from '@/lib/context/StudyPlannerContext';
-import { useAuth } from '@/lib/context/AuthContext';
+import { useAuth } from '@/lib/context/auth-context';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Loading, CardSkeleton, PageSkeleton } from '@/components/ui/Loading';
+import { Loading, PageSkeleton } from '@/components/ui/Loading';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { cn } from '@/lib/utils';
+import { CreateStudyPlanRequest, DifficultyLevel } from '@/lib/types';
 
 interface CreatePlanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (planData: any) => Promise<void>;
+  onSubmit: (planData: CreateStudyPlanRequest) => Promise<void>;
 }
 
 function CreatePlanModal({ isOpen, onClose, onSubmit }: CreatePlanModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateStudyPlanRequest>({
     title: '',
     description: '',
     startDate: '',
     endDate: '',
     targetHoursPerDay: 8,
-    difficultyLevel: 'INTERMEDIATE',
+    difficultyLevel: 'INTERMEDIATE' as DifficultyLevel,
+    subjects: {
+      mandatory: [],
+      optional: [],
+      languages: []
+    }
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +48,12 @@ function CreatePlanModal({ isOpen, onClose, onSubmit }: CreatePlanModalProps) {
         startDate: '',
         endDate: '',
         targetHoursPerDay: 8,
-        difficultyLevel: 'INTERMEDIATE',
+        difficultyLevel: 'INTERMEDIATE' as DifficultyLevel,
+        subjects: {
+          mandatory: [],
+          optional: [],
+          languages: []
+        }
       });
     } catch (error) {
       console.error('Failed to create plan:', error);
@@ -145,7 +156,7 @@ function CreatePlanModal({ isOpen, onClose, onSubmit }: CreatePlanModalProps) {
               </label>
               <select
                 value={formData.difficultyLevel}
-                onChange={(e) => setFormData(prev => ({ ...prev, difficultyLevel: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, difficultyLevel: e.target.value as DifficultyLevel }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="BEGINNER">Beginner</option>
@@ -186,7 +197,6 @@ export function StudyPlannerDashboard() {
     studyPlans,
     currentPlan,
     dailyPlan,
-    tasks,
     isLoading,
     error,
     createStudyPlan,
@@ -210,7 +220,7 @@ export function StudyPlannerDashboard() {
     }
   }, [selectedPlanId, getStudyPlan]);
 
-  const handleCreatePlan = async (planData: any) => {
+  const handleCreatePlan = async (planData: CreateStudyPlanRequest) => {
     try {
       const success = await createStudyPlan(planData);
       if (success) {
@@ -286,16 +296,16 @@ export function StudyPlannerDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {studyPlans.map((plan) => (
           <motion.div
-            key={plan.id}
+            key={plan.planId}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -5 }}
             className="cursor-pointer"
-            onClick={() => handlePlanSelect(plan.id)}
+            onClick={() => handlePlanSelect(plan.planId)}
           >
             <Card className={cn(
               "transition-all duration-200",
-              selectedPlanId === plan.id && "ring-2 ring-blue-500 shadow-lg"
+              selectedPlanId === plan.planId && "ring-2 ring-blue-500 shadow-lg"
             )}>
               <CardHeader>
                 <div className="flex items-center justify-between">

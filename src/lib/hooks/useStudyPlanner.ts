@@ -1,340 +1,349 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAppStore } from '@/lib/store';
-import { studyPlannerService, StudyPlanCreate, StudyPlanUpdate, TaskCreate, TaskUpdate } from '@/lib/api';
-import { PlanDay, TaskID, TopicID } from '@/lib/types';
+import { studyPlannerService } from '@/lib/api/study-planner';
+import {
+  StudyPlan,
+  Task,
+  DailyPlan,
+  CreateStudyPlanRequest,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  CompleteTaskRequest,
+  DeferTaskRequest
+} from '@/lib/types';
 
 export interface UseStudyPlannerReturn {
-    // State
-    studyPlan: PlanDay[];
-    currentDay: PlanDay | null;
-    isLoading: boolean;
-    error: string | null;
+  // State
+  studyPlans: StudyPlan[];
+  currentPlan: StudyPlan | null;
+  dailyPlan: DailyPlan | null;
+  tasks: Task[];
+  isLoading: boolean;
+  error: string | null;
 
-    // Actions
-    createStudyPlan: (planData: StudyPlanCreate) => Promise<void>;
-    updateStudyPlan: (planId: string, updates: StudyPlanUpdate) => Promise<void>;
-    deleteStudyPlan: (planId: string) => Promise<void>;
+  // Actions
+  createStudyPlan: (planData: CreateStudyPlanRequest) => Promise<boolean>;
+  updateStudyPlan: (planId: string, updates: Partial<CreateStudyPlanRequest>) => Promise<boolean>;
+  deleteStudyPlan: (planId: string) => Promise<boolean>;
+  getStudyPlans: () => Promise<void>;
+  setCurrentPlan: (plan: StudyPlan) => void;
 
-    // Task Management
-    addTask: (taskData: TaskCreate) => Promise<void>;
-    updateTask: (taskId: TaskID, updates: TaskUpdate) => Promise<void>;
-    deleteTask: (taskId: TaskID) => Promise<void>;
-    toggleTaskCompletion: (taskId: TaskID) => Promise<void>;
-    deferTask: (taskId: TaskID, newDate: string) => Promise<void>;
+  // Task management
+  createTask: (taskData: CreateTaskRequest) => Promise<boolean>;
+  updateTask: (taskId: string, updates: UpdateTaskRequest) => Promise<boolean>;
+  startTask: (taskId: string) => Promise<boolean>;
+  completeTask: (taskId: string, data: CompleteTaskRequest) => Promise<boolean>;
+  deferTask: (taskId: string, data: DeferTaskRequest) => Promise<boolean>;
 
-    // Day Navigation
-    viewDay: (dayNumber: number) => void;
-    nextDay: () => void;
-    previousDay: () => void;
+  // Daily plan management
+  getDailyPlan: (date: string) => Promise<void>;
+  getTodayPlan: () => Promise<void>;
 
-    // Study Sessions
-    startStudySession: (taskId: TaskID) => Promise<void>;
-    endStudySession: (taskId: TaskID, duration: number) => Promise<void>;
-
-    // Utilities
-    getTasksForDay: (dayNumber: number) => PlanDay | null;
-    getTasksByTopic: (topicId: TopicID) => any[];
-    clearError: () => void;
-    refreshStudyPlan: () => Promise<void>;
+  // Utility
+  clearError: () => void;
 }
 
 export function useStudyPlanner(): UseStudyPlannerReturn {
-    const {
-        studyPlan,
-        currentVisibleDay,
-        setStudyPlan,
-        updateStudyPlan: updateStoreStudyPlan,
-        viewDay: storeViewDay,
-        toggleTaskCompletion: storeToggleTaskCompletion,
-    } = useAppStore();
+  const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
+  const [currentPlan, setCurrentPlan] = useState<StudyPlan | null>(null);
+  const [dailyPlan, setDailyPlan] = useState<DailyPlan | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
-    // Get current day from store
-    const currentDay = studyPlan.find(day => day.dayNumber === currentVisibleDay) || null;
+  const createStudyPlan = useCallback(async (planData: CreateStudyPlanRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // Clear error
-    const clearError = useCallback(() => setError(null), []);
+      const response = await studyPlannerService.createStudyPlan(planData);
 
-    // Create study plan
-    const createStudyPlan = useCallback(async (planData: StudyPlanCreate) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+      if (response.success && response.data) {
+        const newPlan = response.data;
+        setStudyPlans(prev => [...prev, newPlan]);
+        setCurrentPlan(newPlan);
+        return true;
+      } else {
+        setError(response.message || 'Failed to create study plan');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create study plan';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-            const response = await studyPlannerService.createStudyPlan(planData);
+  const updateStudyPlan = useCallback(async (planId: string, updates: Partial<CreateStudyPlanRequest>): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            if (response.data) {
-                setStudyPlan(response.data);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to create study plan');
-            throw err;
-        } finally {
-            setIsLoading(false);
+      const response = await studyPlannerService.updateStudyPlan(planId, updates);
+
+      if (response.success && response.data) {
+        const updatedPlan = response.data;
+        setStudyPlans(prev => prev.map(plan =>
+          plan.planId === planId ? updatedPlan : plan
+        ));
+
+        if (currentPlan?.planId === planId) {
+          setCurrentPlan(updatedPlan);
         }
-    }, [setStudyPlan]);
+        return true;
+      } else {
+        setError(response.message || 'Failed to update study plan');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update study plan';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPlan]);
 
-    // Update study plan
-    const updateStudyPlan = useCallback(async (planId: string, updates: StudyPlanUpdate) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+  const deleteStudyPlan = useCallback(async (planId: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            const response = await studyPlannerService.updateStudyPlan(planId, updates);
+      // For now, just remove from local state since delete endpoint might not be implemented
+      setStudyPlans(prev => prev.filter(plan => plan.planId !== planId));
 
-            if (response.data) {
-                // Update the store with the new plan data
-                setStudyPlan(response.data);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to update study plan');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [setStudyPlan]);
+      if (currentPlan?.planId === planId) {
+        setCurrentPlan(null);
+        setTasks([]);
+        setDailyPlan(null);
+      }
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete study plan';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPlan]);
 
-    // Delete study plan
-    const deleteStudyPlan = useCallback(async (planId: string) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+  const getStudyPlans = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            await studyPlannerService.deleteStudyPlan(planId);
+      const response = await studyPlannerService.getStudyPlans();
 
-            // Clear the study plan from store
-            setStudyPlan([]);
-        } catch (err: any) {
-            setError(err.message || 'Failed to delete study plan');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [setStudyPlan]);
+      if (response.success && response.data) {
+        setStudyPlans(response.data);
+      } else {
+        setError(response.message || 'Failed to load study plans');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load study plans';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    // Add task
-    const addTask = useCallback(async (taskData: TaskCreate) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+  const createTask = useCallback(async (taskData: CreateTaskRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            const response = await studyPlannerService.createTask(taskData);
+      const response = await studyPlannerService.createTask(taskData);
 
-            if (response.data) {
-                // Refresh the study plan to get updated data
-                await refreshStudyPlan();
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to add task');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+      if (response.success && response.data) {
+        const newTask = response.data;
+        setTasks(prev => [...prev, newTask]);
+        return true;
+      } else {
+        setError(response.message || 'Failed to create task');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create task';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    // Update task
-    const updateTask = useCallback(async (taskId: TaskID, updates: TaskUpdate) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+  const updateTask = useCallback(async (taskId: string, updates: UpdateTaskRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            const response = await studyPlannerService.updateTask(taskId, updates);
+      const response = await studyPlannerService.updateTask(taskId, updates);
 
-            if (response.data) {
-                // Update the store
-                updateStoreStudyPlan(taskId, updates);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to update task');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [updateStoreStudyPlan]);
+      if (response.success && response.data) {
+        const updatedTask = response.data;
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
+        ));
+        return true;
+      } else {
+        setError(response.message || 'Failed to update task');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update task';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    // Delete task
-    const deleteTask = useCallback(async (taskId: TaskID) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+  const startTask = useCallback(async (taskId: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            await studyPlannerService.deleteTask(taskId);
+      const response = await studyPlannerService.startTask(taskId);
 
-            // Refresh the study plan to get updated data
-            await refreshStudyPlan();
-        } catch (err: any) {
-            setError(err.message || 'Failed to delete task');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+      if (response.success && response.data) {
+        const updatedTask = response.data;
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
+        ));
+        return true;
+      } else {
+        setError(response.message || 'Failed to start task');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to start task';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    // Toggle task completion
-    const toggleTaskCompletion = useCallback(async (taskId: TaskID) => {
-        try {
-            setError(null);
+  const completeTask = useCallback(async (taskId: string, data: CompleteTaskRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            // Optimistically update the store
-            storeToggleTaskCompletion(taskId);
+      const response = await studyPlannerService.completeTask(taskId, data);
 
-            // Update the task on the server
-            const task = studyPlan
-                .flatMap(day => day.tasks)
-                .find(t => t.id === taskId);
+      if (response.success && response.data) {
+        const updatedTask = response.data;
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
+        ));
+        return true;
+      } else {
+        setError(response.message || 'Failed to complete task');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to complete task';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-            if (task) {
-                await studyPlannerService.updateTask(taskId, {
-                    isCompleted: !task.isCompleted,
-                    completedAt: !task.isCompleted ? new Date().toISOString() : undefined,
-                });
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to toggle task completion');
-            // Revert the optimistic update
-            storeToggleTaskCompletion(taskId);
-            throw err;
-        }
-    }, [storeToggleTaskCompletion, studyPlan]);
+  const deferTask = useCallback(async (taskId: string, data: DeferTaskRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // Defer task
-    const deferTask = useCallback(async (taskId: TaskID, newDate: string) => {
-        try {
-            setIsLoading(true);
-            setError(null);
+      const response = await studyPlannerService.deferTask(taskId, data);
 
-            await studyPlannerService.deferTask(taskId, newDate);
+      if (response.success && response.data) {
+        const updatedTask = response.data;
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
+        ));
+        return true;
+      } else {
+        setError(response.message || 'Failed to defer task');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to defer task';
+      setError(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-            // Refresh the study plan to get updated data
-            await refreshStudyPlan();
-        } catch (err: any) {
-            setError(err.message || 'Failed to defer task');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+  const getDailyPlan = useCallback(async (date: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // View day
-    const viewDay = useCallback((dayNumber: number) => {
-        storeViewDay(dayNumber);
-    }, [storeViewDay]);
+      const response = await studyPlannerService.getDailyPlan(date);
 
-    // Next day
-    const nextDay = useCallback(() => {
-        if (currentDay && currentDay.dayNumber < studyPlan.length) {
-            viewDay(currentDay.dayNumber + 1);
-        }
-    }, [currentDay, studyPlan.length, viewDay]);
+      if (response.success && response.data) {
+        setDailyPlan(response.data);
+      } else {
+        setError(response.message || 'Failed to load daily plan');
+        setDailyPlan(null);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load daily plan';
+      setError(errorMessage);
+      setDailyPlan(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    // Previous day
-    const previousDay = useCallback(() => {
-        if (currentDay && currentDay.dayNumber > 1) {
-            viewDay(currentDay.dayNumber - 1);
-        }
-    }, [currentDay, viewDay]);
+  const getTodayPlan = useCallback(async () => {
+    try {
+      const response = await studyPlannerService.getTodaysPlan();
+      if (response.success && response.data) {
+        setDailyPlan(response.data);
+      } else {
+        // If no today's plan exists, try to get today's date
+        const today = new Date().toISOString().split('T')[0];
+        await getDailyPlan(today);
+      }
+    } catch (err) {
+      console.error('Failed to load today\'s plan:', err);
+      // Fallback to today's date
+      const today = new Date().toISOString().split('T')[0];
+      await getDailyPlan(today);
+    }
+  }, [getDailyPlan]);
 
-    // Start study session
-    const startStudySession = useCallback(async (taskId: TaskID) => {
-        try {
-            setError(null);
+  // Load study plans on mount
+  useEffect(() => {
+    getStudyPlans();
+  }, [getStudyPlans]);
 
-            await studyPlannerService.startStudySession({
-                taskId,
-                startTime: new Date().toISOString(),
-            });
-        } catch (err: any) {
-            setError(err.message || 'Failed to start study session');
-            throw err;
-        }
-    }, []);
-
-    // End study session
-    const endStudySession = useCallback(async (taskId: TaskID, duration: number) => {
-        try {
-            setError(null);
-
-            await studyPlannerService.endStudySession(taskId, {
-                endTime: new Date().toISOString(),
-                duration,
-            });
-        } catch (err: any) {
-            setError(err.message || 'Failed to end study session');
-            throw err;
-        }
-    }, []);
-
-    // Get tasks for a specific day
-    const getTasksForDay = useCallback((dayNumber: number): PlanDay | null => {
-        return studyPlan.find(day => day.dayNumber === dayNumber) || null;
-    }, [studyPlan]);
-
-    // Get tasks by topic
-    const getTasksByTopic = useCallback((topicId: TopicID) => {
-        return studyPlan
-            .flatMap(day => day.tasks)
-            .filter(task => task.topicId === topicId);
-    }, [studyPlan]);
-
-    // Refresh study plan
-    const refreshStudyPlan = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
-
-            const response = await studyPlannerService.getStudyPlan();
-
-            if (response.data) {
-                setStudyPlan(response.data);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to refresh study plan');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [setStudyPlan]);
-
-    // Load study plan on mount
-    useEffect(() => {
-        if (studyPlan.length === 0) {
-            refreshStudyPlan();
-        }
-    }, [refreshStudyPlan, studyPlan.length]);
-
-    return {
-        // State
-        studyPlan,
-        currentDay,
-        isLoading,
-        error,
-
-        // Actions
-        createStudyPlan,
-        updateStudyPlan,
-        deleteStudyPlan,
-
-        // Task Management
-        addTask,
-        updateTask,
-        deleteTask,
-        toggleTaskCompletion,
-        deferTask,
-
-        // Day Navigation
-        viewDay,
-        nextDay,
-        previousDay,
-
-        // Study Sessions
-        startStudySession,
-        endStudySession,
-
-        // Utilities
-        getTasksForDay,
-        getTasksByTopic,
-        clearError,
-        refreshStudyPlan,
-    };
+  return {
+    studyPlans,
+    currentPlan,
+    dailyPlan,
+    tasks,
+    isLoading,
+    error,
+    createStudyPlan,
+    updateStudyPlan,
+    deleteStudyPlan,
+    getStudyPlans,
+    setCurrentPlan,
+    createTask,
+    updateTask,
+    startTask,
+    completeTask,
+    deferTask,
+    getDailyPlan,
+    getTodayPlan,
+    clearError,
+  };
 }

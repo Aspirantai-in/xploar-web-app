@@ -130,10 +130,10 @@ export class ProgressService {
 
       // In a real app, you would call the API
       // const response = await this.apiService.getLearningInsights();
-      
+
       // For now, generate mock insights
       const mockInsights = this.generateMockLearningInsights();
-      
+
       // Cache the insights
       StorageUtils.sessionStorage.set('xploar_learning_insights', mockInsights);
       return { success: true, data: mockInsights };
@@ -155,10 +155,10 @@ export class ProgressService {
 
       // In a real app, you would call the API
       // const response = await this.apiService.getGoalTracking();
-      
+
       // For now, generate mock goal data
       const mockGoals = this.generateMockGoalTracking();
-      
+
       // Cache the goals
       StorageUtils.localStorage.set('xploar_goal_tracking', mockGoals);
       return { success: true, data: mockGoals };
@@ -174,24 +174,24 @@ export class ProgressService {
     try {
       // Update cached goal
       const cached = StorageUtils.localStorage.get('xploar_goal_tracking') || [];
-      const goalIndex = cached.findIndex((goal: any) => goal.id === goalId);
-      
+      const goalIndex = cached.findIndex((goal: StudyGoal) => goal.goalId === goalId);
+
       if (goalIndex !== -1) {
         cached[goalIndex].currentProgress = progress;
         cached[goalIndex].lastUpdated = new Date().toISOString();
-        
+
         // Check if goal is completed
         if (progress >= cached[goalIndex].target) {
           cached[goalIndex].status = 'completed';
           cached[goalIndex].completedAt = new Date().toISOString();
         }
-        
+
         StorageUtils.localStorage.set('xploar_goal_tracking', cached);
       }
 
       // In a real app, you would also send this to the API
       // await this.apiService.updateGoalProgress(goalId, progress);
-      
+
       return { success: true, data: cached[goalIndex] };
     } catch (error) {
       throw this.handleError(error);
@@ -241,7 +241,7 @@ export class ProgressService {
 
       // In a real app, you would also send this to the API
       // await this.apiService.createGoal(goalData);
-      
+
       return { success: true, data: newGoal };
     } catch (error) {
       throw this.handleError(error);
@@ -262,10 +262,10 @@ export class ProgressService {
 
       // In a real app, you would call the API
       // const response = await this.apiService.getStudySessionHistory(timeframe);
-      
+
       // For now, generate mock session history
       const mockHistory = this.generateMockStudySessionHistory(timeframe);
-      
+
       // Cache the history
       StorageUtils.sessionStorage.set(cacheKey, mockHistory);
       return { success: true, data: mockHistory };
@@ -287,10 +287,10 @@ export class ProgressService {
 
       // In a real app, you would call the API
       // const response = await this.apiService.getTopicPerformance();
-      
+
       // For now, generate mock topic performance
       const mockTopicPerformance = this.generateMockTopicPerformance();
-      
+
       // Cache the topic performance
       StorageUtils.sessionStorage.set('xploar_topic_performance', mockTopicPerformance);
       return { success: true, data: mockTopicPerformance };
@@ -387,22 +387,22 @@ export class ProgressService {
 
     // Generate realistic mock data based on timeframe
     const days = timeframe === 'week' ? 7 : timeframe === 'month' ? 30 : 365;
-    
+
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
-      
+
       // Generate 1-3 sessions per day
       const sessionsCount = Math.floor(Math.random() * 3) + 1;
-      
+
       for (let j = 0; j < sessionsCount; j++) {
         const sessionStart = new Date(date);
         sessionStart.setHours(Math.floor(Math.random() * 12) + 6); // 6 AM - 6 PM
         sessionStart.setMinutes(Math.floor(Math.random() * 60));
-        
+
         const duration = Math.floor(Math.random() * 45) + 15; // 15-60 minutes
         const sessionEnd = new Date(sessionStart.getTime() + duration * 60000);
-        
+
         history.push({
           id: `session_${i}_${j}`,
           date: date.toISOString().split('T')[0],
@@ -454,7 +454,7 @@ export class ProgressService {
   /**
    * Handle API errors
    */
-  private handleError(error: any) {
+  private handleError(error: unknown) {
     if (error.response) {
       // Server responded with error status
       return new Error(error.response.data?.message || 'Progress tracking operation failed');

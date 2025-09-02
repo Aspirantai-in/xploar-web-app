@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/context/auth-context';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { 
-  BookOpen, 
-  Target, 
-  Calendar, 
-  Clock, 
-  TrendingUp, 
+import {
+  BookOpen,
+  Target,
+  Calendar,
+  Clock,
+  TrendingUp,
   Trophy,
   LogOut,
   User,
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user, profile, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   if (!user) {
     return null;
@@ -36,7 +36,7 @@ export default function DashboardPage() {
               </div>
               <h1 className="text-2xl font-bold text-gray-900">Xploar</h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm">
                 <Settings className="w-4 h-4 mr-2" />
@@ -152,10 +152,9 @@ export default function DashboardPage() {
                   ].map((task, index) => (
                     <div key={index} className="flex items-center space-x-4 p-3 rounded-lg border">
                       <div className="flex-shrink-0">
-                        <div className={`w-3 h-3 rounded-full ${
-                          task.status === 'completed' ? 'bg-green-500' :
-                          task.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-300'
-                        }`} />
+                        <div className={`w-3 h-3 rounded-full ${task.status === 'completed' ? 'bg-green-500' :
+                            task.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-300'
+                          }`} />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">{task.subject}</p>
@@ -165,7 +164,7 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="mt-6">
                   <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
                     View Full Schedule
@@ -196,7 +195,7 @@ export default function DashboardPage() {
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '65%' }}></div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>This Week</span>
@@ -229,7 +228,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-600">Completed 7 days in a row</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 p-2 bg-blue-50 rounded-lg">
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                       <BookOpen className="w-4 h-4 text-blue-600" />
@@ -250,17 +249,21 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Start Studying
-                  </Button>
+                  <Link href="/daily-planner">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Daily Planner
+                    </Button>
+                  </Link>
+                  <Link href="/study-planner">
+                    <Button variant="outline" className="w-full justify-start">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Study Planner
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="w-full justify-start">
                     <Target className="w-4 h-4 mr-2" />
                     Set New Goal
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    View Calendar
                   </Button>
                 </div>
               </CardContent>

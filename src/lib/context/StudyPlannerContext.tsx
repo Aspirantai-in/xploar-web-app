@@ -1,8 +1,18 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
-import { studyPlannerService } from '@/lib/api/study-planner';
-import { StudyPlan, Task, DailyPlan, StudySession } from '@/lib/types';
+import { StudyPlannerService } from '@/lib/services/study-planner.service';
+import {
+  StudyPlan,
+  Task,
+  DailyPlan,
+  CreateStudyPlanRequest,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  CompleteTaskRequest,
+  DeferTaskRequest,
+  ApiResponse
+} from '@/lib/types';
 
 interface StudyPlannerContextType {
   // State
@@ -12,31 +22,27 @@ interface StudyPlannerContextType {
   tasks: Task[];
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
-  createStudyPlan: (planData: any) => Promise<boolean>;
-  updateStudyPlan: (planId: string, updates: any) => Promise<boolean>;
+  createStudyPlan: (planData: CreateStudyPlanRequest) => Promise<boolean>;
+  updateStudyPlan: (planId: string, updates: Partial<CreateStudyPlanRequest>) => Promise<boolean>;
   deleteStudyPlan: (planId: string) => Promise<boolean>;
   getStudyPlans: () => Promise<void>;
   getStudyPlan: (planId: string) => Promise<void>;
-  
+
   // Task management
-  createTask: (taskData: any) => Promise<boolean>;
-  updateTask: (taskId: string, updates: any) => Promise<boolean>;
+  createTask: (taskData: CreateTaskRequest) => Promise<boolean>;
+  updateTask: (taskId: string, updates: UpdateTaskRequest) => Promise<boolean>;
   deleteTask: (taskId: string) => Promise<boolean>;
   startTask: (taskId: string) => Promise<boolean>;
-  completeTask: (taskId: string, completionData: any) => Promise<boolean>;
-  deferTask: (taskId: string, deferData: any) => Promise<boolean>;
-  
+  completeTask: (taskId: string, completionData: CompleteTaskRequest) => Promise<boolean>;
+  deferTask: (taskId: string, deferData: DeferTaskRequest) => Promise<boolean>;
+
   // Daily plan management
   getDailyPlan: (date: string) => Promise<void>;
   getTodayPlan: () => Promise<void>;
-  completeDay: (date: string, completionData: any) => Promise<boolean>;
-  
-  // Study sessions
-  startStudySession: (sessionData: any) => Promise<boolean>;
-  endStudySession: (sessionId: string, endData: any) => Promise<boolean>;
-  
+  completeDay: (date: string, completionData: { notes?: string; performanceMetrics?: Record<string, unknown> }) => Promise<boolean>;
+
   // Utility
   clearError: () => void;
   setCurrentPlan: (plan: StudyPlan | null) => void;
@@ -56,26 +62,30 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Get service instance
+  const studyPlannerService = StudyPlannerService.getInstance();
+
   // Load study plans on mount
   useEffect(() => {
     loadStudyPlans();
   }, []);
 
-  const loadStudyPlans = async () => {
+  const loadStudyPlans = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.getStudyPlans();
-      
+
       if (response.success && response.data) {
         setStudyPlans(response.data);
+
         // Set first active plan as current if none selected
         if (!currentPlan && response.data.length > 0) {
-          const activePlan = response.data.find(plan => plan.status === 'ACTIVE');
+          const activePlan = response.data.find((plan: StudyPlan) => plan.status === 'ACTIVE');
           if (activePlan) {
             setCurrentPlan(activePlan);
-            await loadStudyPlan(activePlan.id);
+            await loadStudyPlanDetails(activePlan.planId);
           }
         }
       } else {
@@ -87,15 +97,26 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPlan]);
 
-  const createStudyPlan = async (planData: any): Promise<boolean> => {
+  const loadStudyPlanDetails = useCallback(async (planId: string) => {
+    try {
+      const response = await studyPlannerService.getStudyPlan(planId);
+      if (response.success && response.data) {
+        setCurrentPlan(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to load study plan details:', err);
+    }
+  }, []);
+
+  const createStudyPlan = useCallback(async (planData: CreateStudyPlanRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.createStudyPlan(planData);
-      
+
       if (response.success && response.data) {
         const newPlan = response.data;
         setStudyPlans(prev => [...prev, newPlan]);
@@ -112,22 +133,22 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const updateStudyPlan = async (planId: string, updates: any): Promise<boolean> => {
+  const updateStudyPlan = useCallback(async (planId: string, updates: Partial<CreateStudyPlanRequest>): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.updateStudyPlan(planId, updates);
-      
+
       if (response.success && response.data) {
         const updatedPlan = response.data;
-        setStudyPlans(prev => prev.map(plan => 
-          plan.id === planId ? updatedPlan : plan
+        setStudyPlans(prev => prev.map(plan =>
+          plan.planId === planId ? updatedPlan : plan
         ));
-        
-        if (currentPlan?.id === planId) {
+
+        if (currentPlan?.planId === planId) {
           setCurrentPlan(updatedPlan);
         }
         return true;
@@ -142,28 +163,23 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPlan]);
 
-  const deleteStudyPlan = async (planId: string): Promise<boolean> => {
+  const deleteStudyPlan = useCallback(async (planId: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const response = await studyPlannerService.deleteStudyPlan(planId);
-      
-      if (response.success) {
-        setStudyPlans(prev => prev.filter(plan => plan.id !== planId));
-        
-        if (currentPlan?.id === planId) {
-          setCurrentPlan(null);
-          setTasks([]);
-          setDailyPlan(null);
-        }
-        return true;
-      } else {
-        setError(response.message || 'Failed to delete study plan');
-        return false;
+
+      // Note: deleteStudyPlan method doesn't exist in the API service yet
+      // For now, we'll just remove it from local state
+      setStudyPlans(prev => prev.filter(plan => plan.planId !== planId));
+
+      if (currentPlan?.planId === planId) {
+        setCurrentPlan(null);
+        setTasks([]);
+        setDailyPlan(null);
       }
+      return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete study plan';
       setError(errorMessage);
@@ -171,26 +187,26 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPlan]);
 
   const getStudyPlans = useCallback(async () => {
     await loadStudyPlans();
-  }, []);
+  }, [loadStudyPlans]);
 
-  const getStudyPlan = async (planId: string) => {
+  const getStudyPlan = useCallback(async (planId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.getStudyPlan(planId);
-      
+
       if (response.success && response.data) {
         const plan = response.data;
         setCurrentPlan(plan);
-        
+
         // Load tasks for this plan
         await loadTasksForPlan(planId);
-        
+
         // Load today's plan
         await getTodayPlan();
       } else {
@@ -202,29 +218,31 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadTasksForPlan = async (planId: string) => {
+  const loadTasksForPlan = useCallback(async (planId: string) => {
     try {
-      // This would typically come from a separate API call
-      // For now, we'll use the tasks from the plan data
-      const plan = studyPlans.find(p => p.id === planId);
-      if (plan) {
-        // In a real implementation, you'd fetch tasks separately
-        setTasks([]); // Placeholder
+      // Fetch tasks for the specific plan
+      const response = await studyPlannerService.getTasks(planId);
+
+      if (response.success && response.data) {
+        setTasks(response.data);
+      } else {
+        setTasks([]);
       }
     } catch (err) {
-      console.error('Failed to load tasks:', err);
+      console.error('Failed to load tasks for plan:', err);
+      setTasks([]);
     }
-  };
+  }, []);
 
-  const createTask = async (taskData: any): Promise<boolean> => {
+  const createTask = useCallback(async (taskData: CreateTaskRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.createTask(taskData);
-      
+
       if (response.success && response.data) {
         const newTask = response.data;
         setTasks(prev => [...prev, newTask]);
@@ -240,19 +258,19 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const updateTask = async (taskId: string, updates: any): Promise<boolean> => {
+  const updateTask = useCallback(async (taskId: string, updates: UpdateTaskRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.updateTask(taskId, updates);
-      
+
       if (response.success && response.data) {
         const updatedTask = response.data;
-        setTasks(prev => prev.map(task => 
-          task.id === taskId ? updatedTask : task
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
         ));
         return true;
       } else {
@@ -266,22 +284,17 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const deleteTask = async (taskId: string): Promise<boolean> => {
+  const deleteTask = useCallback(async (taskId: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const response = await studyPlannerService.deleteTask(taskId);
-      
-      if (response.success) {
-        setTasks(prev => prev.filter(task => task.id !== taskId));
-        return true;
-      } else {
-        setError(response.message || 'Failed to delete task');
-        return false;
-      }
+
+      // Note: deleteTask method doesn't exist in the API service yet
+      // For now, we'll just remove it from local state
+      setTasks(prev => prev.filter(task => task.taskId !== taskId));
+      return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete task';
       setError(errorMessage);
@@ -289,19 +302,19 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const startTask = async (taskId: string): Promise<boolean> => {
+  const startTask = useCallback(async (taskId: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.startTask(taskId);
-      
+
       if (response.success && response.data) {
         const updatedTask = response.data;
-        setTasks(prev => prev.map(task => 
-          task.id === taskId ? updatedTask : task
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
         ));
         return true;
       } else {
@@ -315,19 +328,19 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const completeTask = async (taskId: string, completionData: any): Promise<boolean> => {
+  const completeTask = useCallback(async (taskId: string, completionData: CompleteTaskRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.completeTask(taskId, completionData);
-      
+
       if (response.success && response.data) {
         const updatedTask = response.data;
-        setTasks(prev => prev.map(task => 
-          task.id === taskId ? updatedTask : task
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
         ));
         return true;
       } else {
@@ -341,19 +354,19 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const deferTask = async (taskId: string, deferData: any): Promise<boolean> => {
+  const deferTask = useCallback(async (taskId: string, deferData: DeferTaskRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.deferTask(taskId, deferData);
-      
+
       if (response.success && response.data) {
         const updatedTask = response.data;
-        setTasks(prev => prev.map(task => 
-          task.id === taskId ? updatedTask : task
+        setTasks(prev => prev.map(task =>
+          task.taskId === taskId ? updatedTask : task
         ));
         return true;
       } else {
@@ -367,47 +380,58 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const getDailyPlan = async (date: string) => {
+  const getDailyPlan = useCallback(async (date: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.getDailyPlan(date);
-      
+
       if (response.success && response.data) {
         setDailyPlan(response.data);
       } else {
         setError(response.message || 'Failed to load daily plan');
+        setDailyPlan(null);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load daily plan';
       setError(errorMessage);
+      setDailyPlan(null);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const getTodayPlan = async () => {
+  const getTodayPlan = useCallback(async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      await getDailyPlan(today);
+      const response = await studyPlannerService.getTodaysPlan();
+      if (response.success && response.data) {
+        setDailyPlan(response.data);
+      } else {
+        // If no today's plan exists, try to get today's date
+        const today = new Date().toISOString().split('T')[0];
+        await getDailyPlan(today);
+      }
     } catch (err) {
       console.error('Failed to load today\'s plan:', err);
+      // Fallback to today's date
+      const today = new Date().toISOString().split('T')[0];
+      await getDailyPlan(today);
     }
-  };
+  }, [getDailyPlan]);
 
-  const completeDay = async (date: string, completionData: any): Promise<boolean> => {
+  const completeDay = useCallback(async (date: string, completionData: { notes?: string; performanceMetrics?: Record<string, unknown> }): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await studyPlannerService.completeDay(date, completionData);
-      
-      if (response.success) {
-        // Refresh the daily plan
-        await getDailyPlan(date);
+
+      if (response.success && response.data) {
+        const updatedDailyPlan = response.data;
+        setDailyPlan(updatedDailyPlan);
         return true;
       } else {
         setError(response.message || 'Failed to complete day');
@@ -420,55 +444,11 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const startStudySession = async (sessionData: any): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await studyPlannerService.startStudySession(sessionData);
-      
-      if (response.success && response.data) {
-        return true;
-      } else {
-        setError(response.message || 'Failed to start study session');
-        return false;
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to start study session';
-      setError(errorMessage);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const endStudySession = async (sessionId: string, endData: any): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await studyPlannerService.endStudySession(sessionId, endData);
-      
-      if (response.success) {
-        return true;
-      } else {
-        setError(response.message || 'Failed to end study session');
-        return false;
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to end study session';
-      setError(errorMessage);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
   const value: StudyPlannerContextType = {
     studyPlans,
@@ -491,8 +471,6 @@ export function StudyPlannerProvider({ children }: StudyPlannerProviderProps) {
     getDailyPlan,
     getTodayPlan,
     completeDay,
-    startStudySession,
-    endStudySession,
     clearError,
     setCurrentPlan,
   };

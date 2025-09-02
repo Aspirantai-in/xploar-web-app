@@ -6,6 +6,7 @@ import {
     Mic,
     TrendingUp,
     Calendar,
+    Clock,
     Trophy,
     Settings,
     ChevronRight,
@@ -24,6 +25,7 @@ import { useAppStore } from '@/lib/store';
 import { FEATURES } from '@/lib/utils/constants';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { isFeatureEnabled } from '@/lib/config/features';
 
 interface SidebarProps {
     onCollapseChange?: (collapsed: boolean) => void;
@@ -34,6 +36,12 @@ const navigationItems = [
         feature: FEATURES.STUDY_PLANNER,
         label: 'Study Plan',
         icon: Calendar,
+        description: 'Overall study strategy'
+    },
+    {
+        feature: FEATURES.DAILY_PLANNER,
+        label: 'Daily Planner',
+        icon: Clock,
         description: 'Daily tasks & schedule'
     },
     {
@@ -191,65 +199,67 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
                         </h4>
                     </div>
 
-                    {navigationItems.map((item, index) => {
-                        const Icon = item.icon;
-                        const isActive = activeFeature === item.feature;
+                    {navigationItems
+                        .filter(item => isFeatureEnabled(item.feature))
+                        .map((item, index) => {
+                            const Icon = item.icon;
+                            const isActive = activeFeature === item.feature;
 
-                        return (
-                            <motion.div
-                                key={item.feature}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.3, delay: index * 0.1 }}
-                                whileHover={{ x: 4 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                <Button
-                                    variant={isActive ? "default" : "ghost"}
-                                    className={cn(
-                                        `w-full ${isCollapsed ? 'justify-center p-0' : 'justify-start p-3'} ${isCollapsed ? 'h-12' : 'h-auto'} relative group transition-all duration-200 rounded-xl`,
-                                        isActive && "bg-dark-blue text-ice-white shadow-lg border-none",
-                                        !isActive && "hover:bg-dark-blue/10 hover:border-dark-blue/20"
-                                    )}
-                                    onClick={() => navigateTo(item.feature)}
-                                    title={isCollapsed ? item.label : undefined}
+                            return (
+                                <motion.div
+                                    key={item.feature}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                                    whileHover={{ x: 4 }}
+                                    whileTap={{ scale: 0.98 }}
                                 >
-                                    <Icon className={cn(
-                                        "transition-colors",
-                                        isCollapsed ? "h-6 w-6" : "h-5 w-5 mr-3",
-                                        isActive ? "text-ice-white" : "text-dark-blue"
-                                    )} />
+                                    <Button
+                                        variant={isActive ? "default" : "ghost"}
+                                        className={cn(
+                                            `w-full ${isCollapsed ? 'justify-center p-0' : 'justify-start p-3'} ${isCollapsed ? 'h-12' : 'h-auto'} relative group transition-all duration-200 rounded-xl`,
+                                            isActive && "bg-dark-blue text-ice-white shadow-lg border-none",
+                                            !isActive && "hover:bg-dark-blue/10 hover:border-dark-blue/20"
+                                        )}
+                                        onClick={() => navigateTo(item.feature)}
+                                        title={isCollapsed ? item.label : undefined}
+                                    >
+                                        <Icon className={cn(
+                                            "transition-colors",
+                                            isCollapsed ? "h-6 w-6" : "h-5 w-5 mr-3",
+                                            isActive ? "text-ice-white" : "text-dark-blue"
+                                        )} />
 
-                                    {!isCollapsed && (
-                                        <div className="flex-1 text-left">
-                                            <div className={cn(
-                                                "font-medium transition-colors",
-                                                isActive ? "text-ice-white" : "text-void-black"
-                                            )}>
-                                                {item.label}
+                                        {!isCollapsed && (
+                                            <div className="flex-1 text-left">
+                                                <div className={cn(
+                                                    "font-medium transition-colors",
+                                                    isActive ? "text-ice-white" : "text-void-black"
+                                                )}>
+                                                    {item.label}
+                                                </div>
+                                                <div className={cn(
+                                                    "text-xs transition-colors",
+                                                    isActive ? "text-ice-white/80" : "text-void-black/50"
+                                                )}>
+                                                    {item.description}
+                                                </div>
                                             </div>
-                                            <div className={cn(
-                                                "text-xs transition-colors",
-                                                isActive ? "text-ice-white/80" : "text-void-black/50"
-                                            )}>
-                                                {item.description}
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {isActive && !isCollapsed && (
-                                        <motion.div
-                                            initial={{ scale: 0, rotate: -90 }}
-                                            animate={{ scale: 1, rotate: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <ChevronRight className="h-4 w-4 ml-2 text-ice-white" />
-                                        </motion.div>
-                                    )}
-                                </Button>
-                            </motion.div>
-                        );
-                    })}
+                                        {isActive && !isCollapsed && (
+                                            <motion.div
+                                                initial={{ scale: 0, rotate: -90 }}
+                                                animate={{ scale: 1, rotate: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <ChevronRight className="h-4 w-4 ml-2 text-ice-white" />
+                                            </motion.div>
+                                        )}
+                                    </Button>
+                                </motion.div>
+                            );
+                        })}
                 </nav>
 
                 {!isCollapsed && (

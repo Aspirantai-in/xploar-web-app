@@ -20,13 +20,8 @@ interface DailyTask {
     isCompleted: boolean;
 }
 
-// Generate a static set of daily tasks for the demo
-const getDailyTasks = (): DailyTask[] => [
-    { id: 'task1', type: 'Current Affairs Quiz', title: 'Today\'s Current Affairs Quiz', description: 'Test your knowledge of recent events.', goal: 5, icon: Newspaper, isCompleted: false },
-    { id: 'task2', type: 'Polity MCQs', title: '20 Polity MCQs', description: 'Strengthen your fundamentals in Indian Polity.', goal: 20, icon: Target, isCompleted: false },
-    { id: 'task3', type: 'CSAT Practice', title: 'CSAT Logical Reasoning', description: 'Solve 2 problems to sharpen your analytical skills.', goal: 2, icon: Brain, isCompleted: false },
-    { id: 'task4', type: 'History Revision', title: 'Revise Modern History Flashcards', description: 'Quick 15-minute revision session.', goal: 15, icon: BrainCircuit, isCompleted: false },
-];
+// TODO: Replace with backend API call to get daily challenges
+const getDailyTasks = (): DailyTask[] => [];
 
 
 export function DailyChallenge() {

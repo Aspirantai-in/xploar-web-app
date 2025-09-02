@@ -5,10 +5,9 @@ import { Lightbulb, FileText, BookOpen, Target, Video } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAppStore } from '@/lib/store';
-import { UPSC_FOUNDATION } from '@/lib/data/topics';
 import { WeeklyReport } from './WeeklyReport';
 import { AIRecommendation } from '@/lib/types';
-import { SAMPLE_CURATED_RESOURCES } from '@/lib/data/extended-data';
+// Removed dummy data imports
 
 // A new, more detailed component for displaying a single recommendation
 function RecommendationCard({ recommendation }: { recommendation: AIRecommendation }) {
@@ -24,26 +23,26 @@ function RecommendationCard({ recommendation }: { recommendation: AIRecommendati
 
     // Dynamic titles for different recommendation types
     const TITLES = {
-        revise_topic: `Revise: ${UPSC_FOUNDATION.find(t => t.id === recommendation.relatedTopicId)?.name}`,
-        attempt_mock: `Practice Mock: ${UPSC_FOUNDATION.find(t => t.id === recommendation.relatedTopicId)?.name}`,
-        read_article: `Read: ${SAMPLE_CURATED_RESOURCES.find(r => r.id === recommendation.relatedResourceId)?.title}`,
-        watch_video: `Watch: ${SAMPLE_CURATED_RESOURCES.find(r => r.id === recommendation.relatedResourceId)?.title}`,
+        revise_topic: `Revise: ${recommendation.metadata?.targetSubject || 'Topic'}`,
+        attempt_mock: `Practice Mock: ${recommendation.metadata?.targetSubject || 'Topic'}`,
+        read_article: `Read: ${recommendation.title}`,
+        watch_video: `Watch: ${recommendation.title}`,
     };
 
     // Handle the primary action for a recommendation
     const handleActionClick = () => {
         // This simulates navigation or opening a resource
         switch (recommendation.type) {
-            case 'attempt_mock':
-                alert(`Navigating to mock test for ${UPSC_FOUNDATION.find(t => t.id === recommendation.relatedTopicId)?.name}...`);
-                // In a real app, you might call a navigation function from the store here
+            case 'TASK_OPTIMIZATION':
+            case 'SCHEDULE_ADJUSTMENT':
+                alert(`Taking action for: ${recommendation.title}`);
+                // TODO: Implement backend API calls for AI recommendations
                 break;
-            case 'read_article':
-            case 'watch_video':
-                const resource = SAMPLE_CURATED_RESOURCES.find(r => r.id === recommendation.relatedResourceId);
-                if (resource) {
-                    window.open(resource.url, '_blank');
-                }
+            case 'STUDY_PLAN':
+                alert('This will optimize your study plan');
+                break;
+            case 'RESOURCE_SUGGESTION':
+                alert('This will show suggested resources');
                 break;
             default:
                 alert('This action will take you to the relevant study material.');

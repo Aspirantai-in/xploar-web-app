@@ -7,49 +7,35 @@ export type {
     UserLoginData,
     UserRegistrationData,
     AuthResponse,
-    RefreshTokenResponse,
-    PasswordResetRequest,
-    PasswordResetConfirm,
-    EmailVerificationRequest,
-    EmailVerificationConfirm
+    RegistrationResponse,
+    TokenRefreshResponse,
+    WhatsAppOTPRequest,
+    WhatsAppOTPVerifyRequest,
+    WhatsAppOTPResponse,
+    WhatsAppOTPVerifyResponse
 } from './auth';
 
 // Study Planner Service
 export { studyPlannerService } from './study-planner';
-export type {
-    StudyPlanCreate,
-    StudyPlanUpdate,
-    TaskCreate,
-    TaskUpdate,
-    StudySessionCreate,
-    StudySessionUpdate,
-    GoalCreate,
-    GoalUpdate,
-    ReminderCreate,
-    ReminderUpdate
-} from './study-planner';
 
-// Progress Tracking Service
+// Progress Service
 export { progressService } from './progress';
-export type {
-    ProgressUpdate,
-    TopicProgress,
-    SubjectProgress,
-    OverallProgress,
-    AchievementCreate,
-    MilestoneCreate,
-    StreakUpdate
-} from './progress';
+export type { ProgressParams } from './progress';
+
+// Recommendations Service
+export { recommendationsService } from './recommendations';
+export type { RecommendationParams } from './recommendations';
+
+// Daily Challenges Service
+export { dailyChallengesService } from './daily-challenges';
+export type { DailyChallenge, DailyChallengeCompletion, DailyChallengeStats } from './daily-challenges';
 
 // User Profile Service
 export { userProfileService } from './user-profile';
 export type {
-    ProfileUpdate,
-    PreferencesUpdate,
-    NotificationSettings,
-    SubscriptionUpdate,
-    PaymentMethod,
-    BillingHistory
+    UserProfileUpdate,
+    PasswordChange,
+    ProfilePictureResponse
 } from './user-profile';
 
 // Content Hub Service
@@ -58,20 +44,16 @@ export type {
     CurrentAffairsParams,
     DailyQuizParams,
     DigitalLibraryParams,
-    FlashcardParams,
-    UserNoteCreate,
-    UserNoteUpdate
+    FlashcardParams
 } from './content-hub';
 
 // Mock Tests Service
 export { mockTestsService } from './mock-tests';
 export type {
     MockTestParams,
-    MockTestCreate,
-    MockTestUpdate,
-    QuestionSubmission,
-    MockTestResult,
-    PerformanceAnalytics
+    MockTestConfig,
+    MockTestSubmission,
+    MockTestResult
 } from './mock-tests';
 
 // Community Service
@@ -112,7 +94,7 @@ export type {
 } from './analytics';
 
 // Common Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     success: boolean;
     message: string;
     data: T;
@@ -120,7 +102,7 @@ export interface ApiResponse<T = any> {
     requestId: string;
 }
 
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
     data: T[];
     pagination: {
         page: number;
@@ -135,7 +117,7 @@ export interface PaginatedResponse<T = any> {
 export interface ApiError {
     message: string;
     code: string;
-    details?: any;
+    details?: unknown;
     timestamp: string;
     requestId: string;
 }
@@ -166,7 +148,8 @@ export const API_ENDPOINTS = {
         MILESTONES: '/api/progress/milestones',
     },
     USER_PROFILE: {
-        PROFILE: '/api/user/profile',
+        PROFILE: '/api/user-profile',
+        PICTURE: '/api/user-profile/picture',
         PREFERENCES: '/api/user/preferences',
         SUBSCRIPTION: '/api/user/subscription',
         BILLING: '/api/user/billing',
@@ -219,7 +202,7 @@ export const API_CONFIG = {
 } as const;
 
 // Utility Functions
-export const createApiUrl = (endpoint: string, params?: Record<string, any>): string => {
+export const createApiUrl = (endpoint: string, params?: Record<string, unknown>): string => {
     const url = new URL(endpoint, API_CONFIG.BASE_URL);
 
     if (params) {
@@ -237,19 +220,20 @@ export const createApiUrl = (endpoint: string, params?: Record<string, any>): st
     return url.toString();
 };
 
-export const handleApiError = (error: any): ApiError => {
-    if (error.response?.data) {
+export const handleApiError = (error: unknown): ApiError => {
+    if (error && typeof error === 'object' && 'response' in error) {
+        const responseError = error as { response?: { data?: { error?: { message?: string; code?: string; details?: unknown } }; timestamp?: string; requestId?: string } };
         return {
-            message: error.response.data.error?.message || 'An error occurred',
-            code: error.response.data.error?.code || 'UNKNOWN_ERROR',
-            details: error.response.data.error?.details,
-            timestamp: error.response.data.timestamp || new Date().toISOString(),
-            requestId: error.response.data.requestId || 'unknown',
+            message: responseError.response?.data?.error?.message || 'An error occurred',
+            code: responseError.response?.data?.error?.code || 'UNKNOWN_ERROR',
+            details: responseError.response?.data?.error?.details,
+            timestamp: responseError.response?.timestamp || new Date().toISOString(),
+            requestId: responseError.response?.requestId || 'unknown',
         };
     }
 
     return {
-        message: error.message || 'Network error occurred',
+        message: error instanceof Error ? error.message : 'Network error occurred',
         code: 'NETWORK_ERROR',
         timestamp: new Date().toISOString(),
         requestId: 'unknown',

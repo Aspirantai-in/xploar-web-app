@@ -185,11 +185,14 @@ export class MockTestsService {
         }
     }
 
-    private handleError(error: any, defaultMessage: string): Error {
-        if (error.response?.data?.error?.message) {
-            return new Error(error.response.data.error.message);
+    private handleError(error: unknown, defaultMessage: string): Error {
+        if (error && typeof error === 'object' && 'response' in error) {
+            const responseError = error as { response?: { data?: { error?: { message?: string } } } };
+            if (responseError.response?.data?.error?.message) {
+                return new Error(responseError.response.data.error.message);
+            }
         }
-        return new Error(error.message || defaultMessage);
+        return new Error(error instanceof Error ? error.message : defaultMessage);
     }
 }
 

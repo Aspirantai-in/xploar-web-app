@@ -174,7 +174,7 @@ export class ValidationUtils {
     /**
      * Validate required fields
      */
-    static validateRequiredFields(data: Record<string, any>, requiredFields: string[]): {
+    static validateRequiredFields(data: Record<string, unknown>, requiredFields: string[]): {
         isValid: boolean;
         errors: Record<string, string>;
     } {
@@ -296,5 +296,27 @@ export class ValidationUtils {
             isValid: Object.keys(errors).length === 0,
             errors,
         };
+    }
+}
+
+// Export commonly used validation functions
+export const validateRequiredFields = ValidationUtils.validateRequiredFields;
+export const sanitizeUserInput = ValidationUtils.sanitizeString;
+
+/**
+ * Validate store state structure
+ */
+export function validateState(state: unknown): boolean {
+    try {
+        // Basic state structure validation
+        if (!state || typeof state !== 'object') {
+            return false;
+        }
+
+        // Validate required state properties
+        const requiredProps = ['currentUser', 'isProUser', 'userRole', 'activeFeature'];
+        return requiredProps.every(prop => prop in state);
+    } catch {
+        return false;
     }
 }

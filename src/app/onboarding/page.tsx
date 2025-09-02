@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/lib/context/auth-context';
-import { OnboardingData } from '@/lib/types';
+import { useAuth } from '../../lib/context/auth-context';
+import { OnboardingData } from '@/lib/types/auth';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
-import { studyPlannerService, StudyPlanData } from '@/lib/api/study-planner';
+import { studyPlannerService } from '@/lib/api/study-planner';
+import { CreateStudyPlanRequest, DifficultyLevel, SubjectArea, StudyPattern } from '@/lib/types/study-planner';
 import {
   Target,
   Calendar,
@@ -84,12 +85,12 @@ export default function OnboardingPage() {
     aiRecommendations: true,
   });
 
-  const { completeOnboarding, isLoading } = useAuth();
+  const { completeOnboarding } = useAuth();
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const updateOnboardingData = (updates: Partial<OnboardingData>) => {
-    setOnboardingData(prev => ({ ...prev, ...updates }));
+    setOnboardingData((prev: Partial<OnboardingData>) => ({ ...prev, ...updates }));
     setError(null); // Clear any previous errors
   };
 
@@ -112,20 +113,20 @@ export default function OnboardingPage() {
         setError(null);
 
         // Prepare data for API
-        const planData: StudyPlanData = {
+        const planData: CreateStudyPlanRequest = {
           title: `${onboardingData.goal} Preparation Plan`,
           description: `Personalized study plan for ${onboardingData.goal}`,
           startDate: onboardingData.startDate!,
           endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 year from start
           targetHoursPerDay: onboardingData.targetHoursPerDay!,
-          difficultyLevel: onboardingData.difficultyLevel!,
+          difficultyLevel: onboardingData.difficultyLevel! as DifficultyLevel,
           subjects: {
-            mandatory: onboardingData.subjects?.mandatory || [],
-            optional: onboardingData.subjects?.optional || [],
+            mandatory: (onboardingData.subjects?.mandatory || []) as SubjectArea[],
+            optional: (onboardingData.subjects?.optional || []) as SubjectArea[],
             languages: onboardingData.subjects?.languages || [],
           },
           preferences: {
-            studyPattern: onboardingData.studyPattern!,
+            studyPattern: onboardingData.studyPattern! as StudyPattern,
             breakDuration: onboardingData.breakDuration!,
             weeklyOffDays: onboardingData.weeklyOffDays!,
             aiRecommendations: onboardingData.aiRecommendations!,
@@ -133,16 +134,16 @@ export default function OnboardingPage() {
         };
 
         // Create study plan via API
-        const response = await studyPlannerService.createStudyPlan(planData);
+        const studyPlan = await studyPlannerService.createStudyPlan(planData);
 
-        if (response.success) {
+        if (studyPlan) {
           // Complete onboarding in auth context
           await completeOnboarding(onboardingData as OnboardingData);
 
           // Navigate to next step (generating plan)
           nextStep();
         } else {
-          throw new Error(response.message || 'Failed to create study plan');
+          throw new Error('Failed to create study plan');
         }
       } catch (error) {
         console.error('Study plan creation error:', error);
@@ -386,7 +387,7 @@ function SubjectsStep({ data, onUpdate }: { data: Partial<OnboardingData>; onUpd
   const toggleSubject = (subject: string, category: 'mandatory' | 'optional' | 'languages') => {
     const currentSubjects = data.subjects?.[category] || [];
     const newSubjects = currentSubjects.includes(subject)
-      ? currentSubjects.filter(s => s !== subject)
+      ? currentSubjects.filter((s: string) => s !== subject)
       : [...currentSubjects, subject];
 
     onUpdate({
@@ -454,7 +455,7 @@ function PreferencesStep({ data, onUpdate }: { data: Partial<OnboardingData>; on
   const toggleWeekDay = (day: string) => {
     const currentDays = data.weeklyOffDays || [];
     const newDays = currentDays.includes(day)
-      ? currentDays.filter(d => d !== day)
+      ? currentDays.filter((d: string) => d !== day)
       : [...currentDays, day];
 
     onUpdate({ weeklyOffDays: newDays });
@@ -472,7 +473,7 @@ function PreferencesStep({ data, onUpdate }: { data: Partial<OnboardingData>; on
             return (
               <button
                 key={pattern.id}
-                onClick={() => onUpdate({ studyPattern: pattern.id as any })}
+                onClick={() => onUpdate({ studyPattern: pattern.id as 'MORNING_PERSON' | 'EVENING_PERSON' | 'FLEXIBLE' })}
                 className={`p-4 text-center rounded-lg border-2 transition-all ${data.studyPattern === pattern.id
                   ? 'border-blue-500 bg-blue-50 text-blue-700'
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'

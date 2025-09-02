@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Task } from '@/lib/types';
 import { useAppStore } from '@/lib/store';
-import { UPSC_FOUNDATION } from '@/lib/data/topics';
+// Removed dummy data import
 import { cn } from '@/lib/utils';
 
 interface TaskCardProps {
@@ -23,7 +23,8 @@ interface TaskCardProps {
 
 export function TaskCard({ task }: TaskCardProps) {
     const { toggleTaskCompletion, deferTask } = useAppStore();
-    const topic = UPSC_FOUNDATION.find(t => t.id === task.topicId);
+    // TODO: Get topic name from backend API or task.subject
+    const topicName = task.subject || 'Unknown Topic';
 
     const getTaskIcon = (kind: string) => {
         switch (kind) {
@@ -93,7 +94,7 @@ export function TaskCard({ task }: TaskCardProps) {
                                         ? "line-through text-green-700"
                                         : "text-void-black"
                                 )}>
-                                    {topic?.name || 'Unknown Topic'}
+                                    {topicName}
                                 </p>
                                 <div className="flex items-center space-x-2 text-sm text-void-black/70">
                                     <Clock className="h-3 w-3" />

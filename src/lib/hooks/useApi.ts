@@ -7,13 +7,13 @@ export interface ApiState<T> {
 }
 
 export interface ApiCallOptions {
-    onSuccess?: (data: any) => void;
+    onSuccess?: (data: unknown) => void;
     onError?: (error: string) => void;
     immediate?: boolean;
 }
 
-export const useApi = <T = any>(
-    apiCall: (...args: any[]) => Promise<T>,
+export const useApi = <T = unknown>(
+    apiCall: (...args: unknown[]) => Promise<T>,
     options: ApiCallOptions = {}
 ) => {
     const [state, setState] = useState<ApiState<T>>({
@@ -25,7 +25,7 @@ export const useApi = <T = any>(
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const execute = useCallback(
-        async (...args: any[]) => {
+        async (...args: unknown[]) => {
             // Cancel previous request if it exists
             if (abortControllerRef.current) {
                 abortControllerRef.current.abort();
@@ -47,13 +47,13 @@ export const useApi = <T = any>(
 
                 options.onSuccess?.(result);
                 return { success: true, data: result };
-            } catch (error: any) {
+            } catch (error: unknown) {
                 // Don't update state if request was cancelled
-                if (error.name === 'AbortError') {
+                if (error instanceof Error && error.name === 'AbortError') {
                     return { success: false, cancelled: true };
                 }
 
-                const errorMessage = error.message || 'API call failed';
+                const errorMessage = error instanceof Error ? error.message : 'API call failed';
 
                 setState(prev => ({
                     ...prev,
@@ -65,7 +65,7 @@ export const useApi = <T = any>(
                 return { success: false, error: errorMessage };
             }
         },
-        [apiCall, options]
+        [apiCall, options.onSuccess, options.onError]
     );
 
     const reset = useCallback(() => {
@@ -107,8 +107,8 @@ export const useApi = <T = any>(
 };
 
 // Specialized hooks for common patterns
-export const useApiWithCache = <T = any>(
-    apiCall: (...args: any[]) => Promise<T>,
+export const useApiWithCache = <T = unknown>(
+    apiCall: (...args: unknown[]) => Promise<T>,
     cacheKey: string,
     options: ApiCallOptions & { cacheTime?: number } = {}
 ) => {
@@ -117,7 +117,7 @@ export const useApiWithCache = <T = any>(
     const { cacheTime = 5 * 60 * 1000, ...apiOptions } = options; // Default 5 minutes
 
     const executeWithCache = useCallback(
-        async (...args: any[]) => {
+        async (...args: unknown[]) => {
             const now = Date.now();
             const cached = cache.get(cacheKey);
 

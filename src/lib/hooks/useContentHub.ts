@@ -1,45 +1,46 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contentHubService, CurrentAffairsParams, DailyQuizParams, DigitalLibraryParams, FlashcardParams } from '@/lib/api';
+import { CurrentAffairsArticle, DailyQuiz, Flashcard, FlashcardDeck, UserNote, CuratedResource } from '@/lib/types';
 
 export interface UseContentHubReturn {
     // Current Affairs
-    currentAffairs: any[];
+    currentAffairs: CurrentAffairsArticle[];
     currentAffairsLoading: boolean;
     currentAffairsError: string | null;
     fetchCurrentAffairs: (params?: CurrentAffairsParams) => Promise<void>;
 
     // Daily Quiz
-    dailyQuiz: any | null;
+    dailyQuiz: DailyQuiz | null;
     dailyQuizLoading: boolean;
     dailyQuizError: string | null;
     fetchDailyQuiz: (params?: DailyQuizParams) => Promise<void>;
     submitQuizAnswer: (questionId: string, answer: string) => Promise<void>;
 
     // Digital Library
-    digitalLibrary: any[];
+    digitalLibrary: CuratedResource[];
     digitalLibraryLoading: boolean;
     digitalLibraryError: string | null;
     fetchDigitalLibrary: (params?: DigitalLibraryParams) => Promise<void>;
-    searchResources: (query: string, filters?: any) => Promise<void>;
+    searchResources: (query: string, filters?: Record<string, unknown>) => Promise<void>;
 
     // Flashcards
-    flashcardDecks: any[];
+    flashcardDecks: FlashcardDeck[];
     flashcardDecksLoading: boolean;
     flashcardDecksError: string | null;
     fetchFlashcardDecks: (params?: FlashcardParams) => Promise<void>;
 
-    flashcards: any[];
+    flashcards: Flashcard[];
     flashcardsLoading: boolean;
     flashcardsError: string | null;
     fetchFlashcards: (deckId: string, params?: FlashcardParams) => Promise<void>;
 
     // User Notes
-    userNotes: any[];
+    userNotes: UserNote[];
     userNotesLoading: boolean;
     userNotesError: string | null;
-    fetchUserNotes: (params?: any) => Promise<void>;
-    createUserNote: (noteData: any) => Promise<void>;
-    updateUserNote: (noteId: string, updates: any) => Promise<void>;
+    fetchUserNotes: (params?: Record<string, unknown>) => Promise<void>;
+    createUserNote: (noteData: Omit<UserNote, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+    updateUserNote: (noteId: string, updates: Partial<UserNote>) => Promise<void>;
     deleteUserNote: (noteId: string) => Promise<void>;
 
     // Utilities
@@ -49,32 +50,32 @@ export interface UseContentHubReturn {
 
 export function useContentHub(): UseContentHubReturn {
     // Current Affairs State
-    const [currentAffairs, setCurrentAffairs] = useState<any[]>([]);
+    const [currentAffairs, setCurrentAffairs] = useState<CurrentAffairsArticle[]>([]);
     const [currentAffairsLoading, setCurrentAffairsLoading] = useState(false);
     const [currentAffairsError, setCurrentAffairsError] = useState<string | null>(null);
 
     // Daily Quiz State
-    const [dailyQuiz, setDailyQuiz] = useState<any | null>(null);
+    const [dailyQuiz, setDailyQuiz] = useState<DailyQuiz | null>(null);
     const [dailyQuizLoading, setDailyQuizLoading] = useState(false);
     const [dailyQuizError, setDailyQuizError] = useState<string | null>(null);
 
     // Digital Library State
-    const [digitalLibrary, setDigitalLibrary] = useState<any[]>([]);
+    const [digitalLibrary, setDigitalLibrary] = useState<CuratedResource[]>([]);
     const [digitalLibraryLoading, setDigitalLibraryLoading] = useState(false);
     const [digitalLibraryError, setDigitalLibraryError] = useState<string | null>(null);
 
     // Flashcard Decks State
-    const [flashcardDecks, setFlashcardDecks] = useState<any[]>([]);
+    const [flashcardDecks, setFlashcardDecks] = useState<FlashcardDeck[]>([]);
     const [flashcardDecksLoading, setFlashcardDecksLoading] = useState(false);
     const [flashcardDecksError, setFlashcardDecksError] = useState<string | null>(null);
 
     // Flashcards State
-    const [flashcards, setFlashcards] = useState<any[]>([]);
+    const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
     const [flashcardsLoading, setFlashcardsLoading] = useState(false);
     const [flashcardsError, setFlashcardsError] = useState<string | null>(null);
 
     // User Notes State
-    const [userNotes, setUserNotes] = useState<any[]>([]);
+    const [userNotes, setUserNotes] = useState<UserNote[]>([]);
     const [userNotesLoading, setUserNotesLoading] = useState(false);
     const [userNotesError, setUserNotesError] = useState<string | null>(null);
 
@@ -99,8 +100,8 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setCurrentAffairs(response.data);
             }
-        } catch (err: any) {
-            setCurrentAffairsError(err.message || 'Failed to fetch current affairs');
+        } catch (err: unknown) {
+            setCurrentAffairsError(err instanceof Error ? err.message : 'Failed to fetch current affairs');
         } finally {
             setCurrentAffairsLoading(false);
         }
@@ -117,8 +118,8 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setDailyQuiz(response.data);
             }
-        } catch (err: any) {
-            setDailyQuizError(err.message || 'Failed to fetch daily quiz');
+        } catch (err: unknown) {
+            setDailyQuizError(err instanceof Error ? err.message : 'Failed to fetch daily quiz');
         } finally {
             setDailyQuizLoading(false);
         }
@@ -134,8 +135,8 @@ export function useContentHub(): UseContentHubReturn {
                 // Update the quiz with the result
                 setDailyQuiz(prev => prev ? { ...prev, userAnswer: answer, result: response.data } : null);
             }
-        } catch (err: any) {
-            setDailyQuizError(err.message || 'Failed to submit quiz answer');
+        } catch (err: unknown) {
+            setDailyQuizError(err instanceof Error ? err.message : 'Failed to submit quiz answer');
             throw err;
         }
     }, []);
@@ -151,14 +152,14 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setDigitalLibrary(response.data);
             }
-        } catch (err: any) {
-            setDigitalLibraryError(err.message || 'Failed to fetch digital library');
+        } catch (err: unknown) {
+            setDigitalLibraryError(err instanceof Error ? err.message : 'Failed to fetch digital library');
         } finally {
             setDigitalLibraryLoading(false);
         }
     }, []);
 
-    const searchResources = useCallback(async (query: string, filters?: any) => {
+    const searchResources = useCallback(async (query: string, filters?: Record<string, unknown>) => {
         try {
             setDigitalLibraryLoading(true);
             setDigitalLibraryError(null);
@@ -168,8 +169,8 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setDigitalLibrary(response.data);
             }
-        } catch (err: any) {
-            setDigitalLibraryError(err.message || 'Failed to search resources');
+        } catch (err: unknown) {
+            setDigitalLibraryError(err instanceof Error ? err.message : 'Failed to search resources');
         } finally {
             setDigitalLibraryLoading(false);
         }
@@ -186,8 +187,8 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setFlashcardDecks(response.data);
             }
-        } catch (err: any) {
-            setFlashcardDecksError(err.message || 'Failed to fetch flashcard decks');
+        } catch (err: unknown) {
+            setFlashcardDecksError(err instanceof Error ? err.message : 'Failed to fetch flashcard decks');
         } finally {
             setFlashcardDecksLoading(false);
         }
@@ -204,15 +205,15 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setFlashcards(response.data);
             }
-        } catch (err: any) {
-            setFlashcardsError(err.message || 'Failed to fetch flashcards');
+        } catch (err: unknown) {
+            setFlashcardsError(err instanceof Error ? err.message : 'Failed to fetch flashcards');
         } finally {
             setFlashcardsLoading(false);
         }
     }, []);
 
     // User Notes
-    const fetchUserNotes = useCallback(async (params?: any) => {
+    const fetchUserNotes = useCallback(async (params?: Record<string, unknown>) => {
         try {
             setUserNotesLoading(true);
             setUserNotesError(null);
@@ -222,14 +223,14 @@ export function useContentHub(): UseContentHubReturn {
             if (response.data) {
                 setUserNotes(response.data);
             }
-        } catch (err: any) {
-            setUserNotesError(err.message || 'Failed to fetch user notes');
+        } catch (err: unknown) {
+            setUserNotesError(err instanceof Error ? err.message : 'Failed to fetch user notes');
         } finally {
             setUserNotesLoading(false);
         }
     }, []);
 
-    const createUserNote = useCallback(async (noteData: any) => {
+    const createUserNote = useCallback(async (noteData: Omit<UserNote, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
         try {
             setUserNotesError(null);
 
@@ -239,13 +240,13 @@ export function useContentHub(): UseContentHubReturn {
                 // Add the new note to the list
                 setUserNotes(prev => [response.data, ...prev]);
             }
-        } catch (err: any) {
-            setUserNotesError(err.message || 'Failed to create user note');
+        } catch (err: unknown) {
+            setUserNotesError(err instanceof Error ? err.message : 'Failed to create user note');
             throw err;
         }
     }, []);
 
-    const updateUserNote = useCallback(async (noteId: string, updates: any) => {
+    const updateUserNote = useCallback(async (noteId: string, updates: Partial<UserNote>) => {
         try {
             setUserNotesError(null);
 
@@ -257,8 +258,8 @@ export function useContentHub(): UseContentHubReturn {
                     note.id === noteId ? { ...note, ...response.data } : note
                 ));
             }
-        } catch (err: any) {
-            setUserNotesError(err.message || 'Failed to update user note');
+        } catch (err: unknown) {
+            setUserNotesError(err instanceof Error ? err.message : 'Failed to update user note');
             throw err;
         }
     }, []);
@@ -271,8 +272,8 @@ export function useContentHub(): UseContentHubReturn {
 
             // Remove the note from the list
             setUserNotes(prev => prev.filter(note => note.id !== noteId));
-        } catch (err: any) {
-            setUserNotesError(err.message || 'Failed to delete user note');
+        } catch (err: unknown) {
+            setUserNotesError(err instanceof Error ? err.message : 'Failed to delete user note');
             throw err;
         }
     }, []);

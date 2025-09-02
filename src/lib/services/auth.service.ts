@@ -1,6 +1,7 @@
 import { AuthService as ApiAuthService } from '../api/auth';
 import { COOKIE_NAMES } from '../constants';
 import Cookies from 'js-cookie';
+import { ErrorHandler } from '@/lib/utils/errorHandler';
 
 export class AuthService {
   private static instance: AuthService;
@@ -29,7 +30,7 @@ export class AuthService {
   }) {
     try {
       const response = await this.apiService.register(userData);
-      
+
       if (response.success) {
         // Auto-login after successful registration
         await this.login({
@@ -37,7 +38,7 @@ export class AuthService {
           password: userData.password,
         });
       }
-      
+
       return response;
     } catch (error) {
       throw this.handleError(error);
@@ -50,15 +51,15 @@ export class AuthService {
   async login(credentials: { email: string; password: string }) {
     try {
       const response = await this.apiService.login(credentials);
-      
+
       if (response.success && response.data) {
         // Store tokens securely
         this.setTokens(response.data.accessToken, response.data.refreshToken);
-        
+
         // Store user info in memory (not localStorage for security)
         this.setUserInfo(response.data.user);
       }
-      
+
       return response;
     } catch (error) {
       throw this.handleError(error);
@@ -93,14 +94,14 @@ export class AuthService {
       }
 
       const response = await this.apiService.refreshToken(refreshToken);
-      
+
       if (response.success && response.data) {
         this.setAccessToken(response.data.accessToken);
         return true;
       }
-      
+
       return false;
-    } catch (error) {
+    } catch {
       // If refresh fails, clear tokens and force re-login
       this.clearTokens();
       this.clearUserInfo();
@@ -135,7 +136,7 @@ export class AuthService {
       sameSite: 'strict',
       expires: 1, // 1 day
     });
-    
+
     Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -179,7 +180,7 @@ export class AuthService {
   /**
    * Set user info in memory
    */
-  private setUserInfo(user: any) {
+  private setUserInfo(user: { userId: string; email: string; firstName: string; lastName: string; roles: string[]; permissions: string[]; lastLoginAt: string }) {
     // This would be implemented with a proper user context
     // For now, we'll store in sessionStorage as a temporary solution
     if (typeof window !== 'undefined') {
@@ -212,17 +213,8 @@ export class AuthService {
   /**
    * Handle API errors
    */
-  private handleError(error: any) {
-    if (error.response) {
-      // Server responded with error status
-      return new Error(error.response.data?.message || 'Authentication failed');
-    } else if (error.request) {
-      // Network error
-      return new Error('Network error. Please check your connection.');
-    } else {
-      // Other error
-      return new Error(error.message || 'An unexpected error occurred');
-    }
+  private handleError(error: unknown) {
+    return ErrorHandler.processError(error, 'AuthService');
   }
 }
 

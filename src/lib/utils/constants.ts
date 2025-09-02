@@ -11,6 +11,7 @@ export const APP_CONFIG = {
 export const FEATURES = {
     ONBOARDING: 'onboarding',
     STUDY_PLANNER: 'study-planner',
+    DAILY_PLANNER: 'daily-planner',
     MOCK_TESTS: 'mock-tests',
     DEBATE: 'debate',
     INTERVIEW: 'interview',

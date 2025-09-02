@@ -4,25 +4,17 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { useAppStore } from '@/lib/store';
 import { FEATURES } from '@/lib/utils/constants';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { isFeatureEnabled } from '@/lib/config/features';
 
 // Feature components
 import { OnboardingFlow } from '@/components/features/onboarding/OnboardingFlow';
 import { StudyPlanner } from '@/components/features/study-planner/StudyPlanner';
-import { MockTests } from '@/components/features/mock-tests/MockTests';
-import { DebateRoom } from '@/components/features/debate/DebateRoom';
-import { InterviewRoom } from '@/components/features/interview/InterviewRoom';
+import { DailyPlanner } from '@/components/features/daily-planner/DailyPlanner';
 import { ProgressDashboard } from '@/components/features/progress/ProgressDashboard';
 import { SettingsPanel } from '@/components/features/settings/SettingsPanel';
-import { ContentHub } from '@/components/features/content-hub/ContentHub';
-import { CommunityHub } from '@/components/features/community/CommunityHub';
-import { MentorConnect } from '@/components/features/mentor-connect/MentorConnect';
-import { Recommendations } from '@/components/features/recommendations/Recommendations';
-import { SyllabusMap } from '@/components/features/syllabus/SyllabusMap';
-import { DailyChallenge } from '@/components/features/daily-challenge/DailyChallenge';
-import { AIEvaluation } from '@/components/features/ai-coach/AIEvaluation';
 import { PricingPage } from '@/components/features/pricing/PricingPage';
-import { MultiModeLearning } from '@/components/features/multi-mode-learning/MultiModeLearning';
+import { ComingSoon } from '@/components/ui/ComingSoon';
 
 
 interface MainLayoutProps {
@@ -30,43 +22,56 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-    const { activeFeature, currentUser } = useAppStore();
+    const { activeFeature, currentUser, navigateTo } = useAppStore();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const showAppLayout = currentUser && activeFeature !== FEATURES.ONBOARDING;
 
+    // Check if user is trying to access a disabled feature
+    useEffect(() => {
+        if (currentUser && activeFeature && !isFeatureEnabled(activeFeature)) {
+            // Don't redirect if we're already on an enabled feature or onboarding
+            if (activeFeature !== FEATURES.ONBOARDING) {
+                console.warn(`Feature ${activeFeature} is disabled. Redirecting to Study Planner.`);
+                // Don't navigate, just show ComingSoon component
+            }
+        }
+    }, [activeFeature, currentUser, navigateTo]);
+
     const renderFeature = () => {
+        // Check if the current feature is disabled
+        if (activeFeature && !isFeatureEnabled(activeFeature) && activeFeature !== FEATURES.ONBOARDING) {
+            const featureLabels: Record<string, string> = {
+                [FEATURES.MOCK_TESTS]: 'Mock Tests',
+                [FEATURES.CONTENT_HUB]: 'Content Hub',
+                [FEATURES.COMMUNITY]: 'Community',
+                [FEATURES.MENTOR_CONNECT]: 'Mentor Connect',
+                [FEATURES.RECOMMENDATIONS]: 'AI Insights',
+                [FEATURES.AI_COACH]: 'AI Coach',
+                [FEATURES.DEBATE]: 'AI Debate',
+                [FEATURES.INTERVIEW]: 'Mock Interview',
+                [FEATURES.SYLLABUS]: 'Syllabus Map',
+                [FEATURES.DAILY_CHALLENGE]: 'Daily Challenge',
+                [FEATURES.MULTI_MODE_LEARNING]: 'Learning Hub'
+            };
+
+            return <ComingSoon
+                featureName={featureLabels[activeFeature] || activeFeature}
+                description="This feature requires backend API implementation and will be available soon."
+            />;
+        }
+
         switch (activeFeature) {
             case FEATURES.STUDY_PLANNER:
                 return <StudyPlanner />;
-            case FEATURES.MOCK_TESTS:
-                return <MockTests />;
-            case FEATURES.DEBATE:
-                return <DebateRoom />;
-            case FEATURES.INTERVIEW:
-                return <InterviewRoom />;
+            case FEATURES.DAILY_PLANNER:
+                return <DailyPlanner />;
             case FEATURES.PROGRESS:
                 return <ProgressDashboard />;
             case FEATURES.SETTINGS:
                 return <SettingsPanel />;
-            case FEATURES.CONTENT_HUB:
-                return <ContentHub />;
-            case FEATURES.COMMUNITY:
-                return <CommunityHub />;
-            case FEATURES.MENTOR_CONNECT:
-                return <MentorConnect />;
-            case FEATURES.RECOMMENDATIONS:
-                return <Recommendations />;
-            case FEATURES.SYLLABUS:
-                return <SyllabusMap />;
-            case FEATURES.DAILY_CHALLENGE:
-                return <DailyChallenge />;
-            case FEATURES.AI_COACH:
-                return <AIEvaluation />;
             case FEATURES.PRICING:
                 return <PricingPage />;
-            case FEATURES.MULTI_MODE_LEARNING:
-                return <MultiModeLearning />;
             default:
                 return currentUser ? <StudyPlanner /> : <OnboardingFlow />;
         }

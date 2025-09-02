@@ -29,7 +29,7 @@ export class ProgressService {
       const queryParams = new URLSearchParams();
       if (params.timeRange) queryParams.append('timeRange', params.timeRange);
       if (params.metrics) queryParams.append('metrics', params.metrics);
-      
+
       const url = `/api/study-planner/progress/subject/${subjectArea}?${queryParams.toString()}`;
       const response = await apiClient.get(url);
       return response;
@@ -52,7 +52,7 @@ export class ProgressService {
       const queryParams = new URLSearchParams();
       if (params.timeRange) queryParams.append('timeRange', params.timeRange);
       if (params.metrics) queryParams.append('metrics', params.metrics);
-      
+
       const url = `/api/study-planner/progress/analytics?${queryParams.toString()}`;
       const response = await apiClient.get(url);
       return response;
@@ -61,11 +61,14 @@ export class ProgressService {
     }
   }
 
-  private handleError(error: any, defaultMessage: string): Error {
-    if (error.response?.data?.error?.message) {
-      return new Error(error.response.data.error.message);
+  private handleError(error: unknown, defaultMessage: string): Error {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const responseError = error as { response?: { data?: { error?: { message?: string } } } };
+      if (responseError.response?.data?.error?.message) {
+        return new Error(responseError.response.data.error.message);
+      }
     }
-    return new Error(error.message || defaultMessage);
+    return new Error(error instanceof Error ? error.message : defaultMessage);
   }
 }
 

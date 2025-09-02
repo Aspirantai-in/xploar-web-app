@@ -1,5 +1,6 @@
 // Export all feature components
 export * from './study-planner/StudyPlannerDashboard';
+export * from './daily-planner';
 export * from './content-hub/ContentHubDashboard';
 export * from './mock-tests/MockTestsDashboard';
 export * from './progress/ProgressDashboard';
@@ -15,4 +16,4 @@ export * from './multi-mode-learning/MultiModeLearning';
 export * from './pricing/PricingPlans';
 export * from './interview/InterviewPrep';
 export * from './debate/DebateHub';
-export * from './syllabus/SyllabusViewer';
+// SyllabusViewer removed - was using dummy data

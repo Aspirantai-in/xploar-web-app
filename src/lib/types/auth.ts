@@ -4,13 +4,13 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  isEmailVerified: boolean;
-  isMobileVerified: boolean;
+  isEmailVerified?: boolean;  // Will be updated from profile
+  isMobileVerified?: boolean; // Will be updated from profile
   roles: string[];
   permissions: string[];
   lastLoginAt: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;  // Backend generates this
+  updatedAt?: string;  // Backend generates this
 }
 
 export interface UserProfile {
@@ -35,7 +35,12 @@ export interface UserProfile {
     targetExam?: string;
     examYear?: number;
     attemptNumber?: number;
-    previousAttempts?: any[];
+    previousAttempts?: {
+      examName: string;
+      attemptDate: string;
+      score?: number;
+      rank?: string;
+    }[];
     targetRank?: string;
   };
   preferences: {
@@ -86,8 +91,8 @@ export interface RegistrationData {
   firstName: string;
   lastName: string;
   password: string;
-  mobileNumber?: string;
-  countryCode?: string;
+  mobileNumber: string;
+  countryCode: string;
   preferences: {
     timezone: string;
     language: string;
@@ -147,8 +152,8 @@ export interface WhatsAppOTPState {
 }
 
 export interface AuthContextType extends AuthState {
-  login: (credentials: any) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (data: RegistrationData) => Promise<void>;
   logout: () => void;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   completeOnboarding: (data: OnboardingData) => Promise<void>;

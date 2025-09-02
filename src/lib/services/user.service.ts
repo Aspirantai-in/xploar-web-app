@@ -169,14 +169,14 @@ export class UserService {
   /**
    * Update user preferences
    */
-  async updateUserPreferences(preferences: any) {
+  async updateUserPreferences(preferences: { timezone?: string; language?: string; notificationSettings?: { email: boolean; sms: boolean; push: boolean; reminderTime?: string }; studyPreferences?: { preferredStudyTime: string; breakDuration: number; weeklyOffDays: string[]; aiRecommendations: boolean } }) {
     try {
       // Update cached preferences
       StorageUtils.localStorage.set('xploar_user_preferences', preferences);
-      
+
       // In a real app, you would also send this to the API
       // await this.apiService.updatePreferences(preferences);
-      
+
       return { success: true, data: preferences };
     } catch (error) {
       throw this.handleError(error);
@@ -210,7 +210,7 @@ export class UserService {
   /**
    * Validate profile data
    */
-  private validateProfileData(data: any): { isValid: boolean; errors: Record<string, string> } {
+  private validateProfileData(data: { firstName?: string; lastName?: string; email?: string; mobileNumber?: string; dateOfBirth?: string; gender?: string }): { isValid: boolean; errors: Record<string, string> } {
     const errors: Record<string, string> = {};
 
     if (data.firstName && !ValidationUtils.isValidName(data.firstName)) {
@@ -260,7 +260,7 @@ export class UserService {
   /**
    * Validate password change
    */
-  private validatePasswordChange(data: any): { isValid: boolean; errors: Record<string, string> } {
+  private validatePasswordChange(data: { currentPassword: string; newPassword: string; confirmPassword: string }): { isValid: boolean; errors: Record<string, string> } {
     const errors: Record<string, string> = {};
 
     if (!data.currentPassword) {
@@ -293,7 +293,7 @@ export class UserService {
   /**
    * Handle API errors
    */
-  private handleError(error: any) {
+  private handleError(error: unknown) {
     if (error.response) {
       // Server responded with error status
       return new Error(error.response.data?.message || 'User operation failed');

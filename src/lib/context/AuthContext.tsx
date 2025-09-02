@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService } from '@/lib/api/auth';
-import { User, AuthState, LoginCredentials, RegisterData } from '@/lib/types';
+import { User, LoginCredentials } from '@/lib/types';
+import { UserRegistrationData } from '@/lib/api/auth';
 
 interface AuthContextType {
   // State
@@ -10,14 +11,14 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   login: (credentials: LoginCredentials) => Promise<boolean>;
-  register: (data: RegisterData) => Promise<boolean>;
+  register: (data: UserRegistrationData) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
   clearError: () => void;
-  
+
   // User management
   updateUser: (updates: Partial<User>) => Promise<boolean>;
 }
@@ -43,11 +44,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
       const isAuth = await authService.isAuthenticated();
-      
+
       if (isAuth) {
-        const userInfo = await authService.getUserInfo();
-        if (userInfo.success && userInfo.data) {
-          setUser(userInfo.data);
+        const userInfo = authService.getCurrentUser();
+        if (userInfo) {
+          setUser(userInfo);
           setIsAuthenticated(true);
         } else {
           // Token might be expired, try to refresh
@@ -69,9 +70,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await authService.login(credentials);
-      
+
       if (response.success && response.data) {
         setUser(response.data.user);
         setIsAuthenticated(true);
@@ -89,16 +90,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const register = async (data: RegisterData): Promise<boolean> => {
+  const register = async (data: UserRegistrationData): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await authService.register(data);
-      
-      if (response.success && response.data) {
-        setUser(response.data);
-        setIsAuthenticated(true);
+
+      if (response.success) {
+        // Registration successful, but user isn't logged in yet
+        // They need to verify email/phone or login separately
         return true;
       } else {
         setError(response.message || 'Registration failed');
@@ -127,8 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const response = await authService.refreshToken();
-      
+      const response = await authService.refreshTokens();
+
       if (response.success && response.data) {
         // Token refreshed successfully
         return true;
@@ -147,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const updateUser = async (updates: Partial<User>): Promise<boolean> => {
     try {
       if (!user) return false;
-      
+
       const updatedUser = { ...user, ...updates };
       setUser(updatedUser);
       return true;

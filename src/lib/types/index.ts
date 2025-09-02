@@ -1,15 +1,238 @@
+/**
+ * UNIFIED TYPE SYSTEM - SINGLE SOURCE OF TRUTH
+ * All types for the Xploar application in one place
+ * Aligned with API Documentation v2.0
+ */
+
+// ============================= PRIMITIVES =============================
+
+export type UUID = string;
 export type UserID = string;
 export type TopicID = string;
 export type TaskID = string;
 export type DateString = string; // Format: "YYYY-MM-DD"
-export type ISOString = string; // e.g., "2025-08-19T09:00:00.000Z"
+export type TimeString = string; // Format: "HH:mm"
+export type ISOString = string; // Format: "YYYY-MM-DDTHH:mm:ssZ"
 
-// --- EXISTING TYPES ---
-export interface User {
-    id: UserID;
-    email: string;
-    name: string;
+// ============================= API TYPES =============================
+
+export interface ApiResponse<T = unknown> {
+    success: boolean;
+    message?: string;
+    data: T;
+    timestamp: string;
+    requestId: string;
 }
+
+export interface ApiErrorResponse {
+    success: false;
+    error: {
+        code: string;
+        message: string;
+        details?: {
+            field: string;
+            message: string;
+            code?: string;
+        }[];
+    };
+    timestamp: string;
+    requestId: string;
+}
+
+export interface PaginatedResponse<T> {
+    content: T[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    first: boolean;
+    last: boolean;
+    numberOfElements: number;
+}
+
+// ============================= ENUMS =============================
+
+export enum TaskType {
+    READING = "READING",
+    PRACTICE_MCQ = "PRACTICE_MCQ",
+    ESSAY_WRITING = "ESSAY_WRITING",
+    REVISION = "REVISION",
+    MOCK_TEST = "MOCK_TEST",
+    VIDEO_LECTURE = "VIDEO_LECTURE",
+    NOTE_MAKING = "NOTE_MAKING",
+    GROUP_DISCUSSION = "GROUP_DISCUSSION",
+    CURRENT_AFFAIRS = "CURRENT_AFFAIRS",
+    CUSTOM = "CUSTOM"
+}
+
+export enum TaskStatus {
+    PENDING = "PENDING",
+    IN_PROGRESS = "IN_PROGRESS",
+    COMPLETED = "COMPLETED",
+    DEFERRED = "DEFERRED",
+    SKIPPED = "SKIPPED",
+    CANCELLED = "CANCELLED",
+    BLOCKED = "BLOCKED"
+}
+
+export enum TaskPriority {
+    CRITICAL = "CRITICAL",
+    HIGH = "HIGH",
+    MEDIUM = "MEDIUM",
+    LOW = "LOW",
+    OPTIONAL = "OPTIONAL"
+}
+
+export enum SubjectArea {
+    GENERAL_STUDIES_1 = "GENERAL_STUDIES_1",
+    GENERAL_STUDIES_2 = "GENERAL_STUDIES_2",
+    ESSAY = "ESSAY",
+    HISTORY = "HISTORY",
+    GEOGRAPHY = "GEOGRAPHY",
+    POLITICAL_SCIENCE = "POLITICAL_SCIENCE",
+    ECONOMICS = "ECONOMICS",
+    MATHEMATICS = "MATHEMATICS",
+    PHYSICS = "PHYSICS",
+    CHEMISTRY = "CHEMISTRY",
+    CURRENT_AFFAIRS = "CURRENT_AFFAIRS",
+    ANSWER_WRITING = "ANSWER_WRITING"
+}
+
+export enum PlanStatus {
+    DRAFT = "DRAFT",
+    ACTIVE = "ACTIVE",
+    PAUSED = "PAUSED",
+    COMPLETED = "COMPLETED",
+    ARCHIVED = "ARCHIVED"
+}
+
+export enum DayStatus {
+    PENDING = "PENDING",
+    IN_PROGRESS = "IN_PROGRESS",
+    COMPLETED = "COMPLETED",
+    SKIPPED = "SKIPPED"
+}
+
+export enum DifficultyLevel {
+    BEGINNER = "BEGINNER",
+    INTERMEDIATE = "INTERMEDIATE",
+    ADVANCED = "ADVANCED",
+    EXPERT = "EXPERT"
+}
+
+export enum StudyPattern {
+    MORNING_PERSON = "MORNING_PERSON",
+    EVENING_PERSON = "EVENING_PERSON"
+}
+
+// ============================= AUTH & USER TYPES =============================
+
+export interface User {
+    userId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    isEmailVerified?: boolean;
+    isMobileVerified?: boolean;
+    roles: string[];
+    permissions: string[];
+    lastLoginAt: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface UserProfile {
+    userId: string;
+    personalInfo: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        mobileNumber?: string;
+        dateOfBirth?: string;
+        gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
+        profilePicture?: string;
+    };
+    academicInfo?: {
+        currentEducation?: 'HIGH_SCHOOL' | 'UNDERGRADUATE' | 'GRADUATE' | 'POSTGRADUATE' | 'WORKING_PROFESSIONAL';
+        fieldOfStudy?: string;
+        institution?: string;
+        graduationYear?: number;
+        academicAchievements?: string[];
+    };
+    examInfo?: {
+        targetExam?: string;
+        examYear?: number;
+        attemptNumber?: number;
+        previousAttempts?: {
+            examName: string;
+            attemptDate: string;
+            score?: number;
+            rank?: string;
+        }[];
+        targetRank?: string;
+    };
+    preferences: {
+        timezone: string;
+        language: string;
+        notificationSettings: {
+            email: boolean;
+            sms: boolean;
+            push: boolean;
+            reminderTime?: string;
+        };
+        studyPreferences?: {
+            preferredStudyTime?: 'MORNING' | 'AFTERNOON' | 'EVENING' | 'NIGHT';
+            breakDuration?: number;
+            weeklyOffDays?: string[];
+            aiRecommendations?: boolean;
+        };
+    };
+    subscription?: {
+        plan: 'FREE' | 'BASIC' | 'PREMIUM' | 'ENTERPRISE';
+        startDate?: string;
+        endDate?: string;
+        features?: string[];
+        isActive?: boolean;
+    };
+}
+
+export interface LoginCredentials {
+    email: string;
+    password: string;
+    deviceInfo?: {
+        deviceId?: string;
+        deviceType?: 'MOBILE' | 'DESKTOP' | 'TABLET';
+        os?: string;
+        osVersion?: string;
+    };
+}
+
+export interface RegistrationData {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    mobileNumber: string;
+    countryCode: string;
+    preferences: {
+        timezone: string;
+        language: string;
+        notificationSettings: {
+            email: boolean;
+            sms: boolean;
+            push: boolean;
+        };
+    };
+}
+
+export interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+    tokenType: string;
+    expiresIn: number;
+}
+
+// ============================= STUDY SYSTEM TYPES =============================
 
 export interface StudyConfig {
     goal: string;
@@ -18,18 +241,219 @@ export interface StudyConfig {
     hoursPerDay: number;
 }
 
-export interface Task {
-    id: TaskID;
-    topicId: TopicID;
-    kind: "Read" | "Practice" | "Explain" | "Recall";
-    durationMins: number;
-    isDone: boolean;
+export interface StudyPlan {
+    planId: UUID;
+    title: string;
+    description: string;
+    status: PlanStatus;
+    startDate: DateString;
+    endDate: DateString;
+    targetHoursPerDay: number;
+    difficultyLevel: DifficultyLevel;
+    totalDays: number;
+    completedDays: number;
+    completionPercentage: number;
+    subjects: {
+        mandatory: SubjectArea[];
+        optional: SubjectArea[];
+        languages?: string[];
+    };
+    preferences?: {
+        studyPattern: StudyPattern;
+        breakDuration: number;
+        weeklyOffDays: string[];
+        aiRecommendations: boolean;
+    };
+    aiMetadata?: {
+        learningStyle: string;
+        strengthAreas: SubjectArea[];
+        weaknessAreas: SubjectArea[];
+    };
+    createdDate: ISOString;
+    updatedDate?: ISOString;
+    version?: number;
+    // Tasks are now managed separately via API
+    tasks?: Task[]; // For compatibility with existing code
 }
 
+export interface Task {
+    taskId: UUID;
+    studyPlanId: UUID;
+    dailyPlanId?: UUID;
+    title: string;
+    description: string;
+    taskType: TaskType;
+    subjectArea: SubjectArea;
+    subject: string;
+    status: TaskStatus;
+    priority: TaskPriority;
+    estimatedDurationMinutes: number;
+    actualDurationMinutes?: number;
+    dueDate: DateString;
+    dueTime?: TimeString;
+    scheduledStartTime?: TimeString;
+    scheduledEndTime?: TimeString;
+    actualStartTime?: ISOString;
+    actualEndTime?: ISOString;
+    completionPercentage: number;
+    difficultyRating?: number;
+    satisfactionRating?: number;
+    deferCount: number;
+    maxDeferrals: number;
+    isRecurring: boolean;
+    isActive: boolean;
+    isMandatory: boolean;
+    isOverdue: boolean;
+    canBeStarted: boolean;
+    canBeCompleted: boolean;
+    canBeDeferred: boolean;
+    taskMetadata?: TaskMetadata;
+    progressData?: TaskProgressData;
+    resources?: TaskResources;
+    dependencyTaskIds: UUID[];
+    version: number;
+
+    // Legacy compatibility fields
+    id?: TaskID;
+    topicId?: TopicID;
+    kind?: "Read" | "Practice" | "Explain" | "Recall";
+    durationMins?: number;
+    isDone?: boolean;
+}
+
+export interface TaskMetadata {
+    source?: string;
+    chapter?: string;
+    pageRange?: string;
+    keyTopics?: string[];
+}
+
+export interface TaskProgressData {
+    pagesRead?: number;
+    timeSpent?: number;
+    notesTaken?: boolean;
+    questionsAnswered?: number;
+    keyPoints?: string[];
+}
+
+export interface TaskResources {
+    books?: string[];
+    videos?: string[];
+    notes?: string[];
+}
+
+export interface DailyPlan {
+    dailyPlanId: UUID;
+    planDate: DateString;
+    studyPlanId: UUID;
+    targetHours: number;
+    completedHours: number;
+    completionPercentage: number;
+    status: DayStatus;
+    isCompleted: boolean;
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
+    deferredTasks: number;
+    tasks: Task[];
+    dailyNotes?: {
+        morning?: string;
+        afternoon?: string;
+        evening?: string;
+    };
+    performanceMetrics?: {
+        focusScore?: number;
+        productivity?: number;
+        energyLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+        distractions?: number;
+        mood?: 'SATISFIED' | 'NEUTRAL' | 'DISSATISFIED';
+        challenges?: string[];
+    };
+    createdDate: ISOString;
+    updatedDate: ISOString;
+}
+
+// Legacy compatibility
 export interface PlanDay {
     day: number;
     date: DateString;
     tasks: Task[];
+}
+
+// ============================= AI & ML TYPES =============================
+
+export interface AIRecommendation {
+    id: string;
+    type: 'STUDY_PLAN' | 'TASK_OPTIMIZATION' | 'SCHEDULE_ADJUSTMENT' | 'RESOURCE_SUGGESTION';
+    title: string;
+    description: string;
+    confidence: number; // 0-1 scale
+    createdAt: ISOString;
+    expiresAt?: ISOString;
+    metadata?: {
+        targetSubject?: SubjectArea;
+        estimatedImpact?: 'LOW' | 'MEDIUM' | 'HIGH';
+        actionRequired?: boolean;
+        relatedTaskIds?: UUID[];
+    };
+}
+
+// ============================= PROGRESS TYPES =============================
+
+export interface OverallProgress {
+    userId: UUID;
+    overallStats: {
+        totalStudyPlans: number;
+        activeStudyPlans: number;
+        completedStudyPlans: number;
+        totalTasks: number;
+        completedTasks: number;
+        pendingTasks: number;
+        deferredTasks: number;
+        overallCompletion: number;
+    };
+    timeStats: {
+        totalStudyTime: number;
+        averageDailyStudyTime: number;
+        longestStudySession: number;
+        totalStudyDays: number;
+        currentStreak: number;
+        longestStreak: number;
+    };
+    subjectProgress: Record<SubjectArea, {
+        completedTasks: number;
+        totalTasks: number;
+        completionPercentage: number;
+        timeSpent: number;
+        strength: 'LOW' | 'MEDIUM' | 'HIGH';
+    }>;
+    performanceTrends: {
+        weeklyProgress: number[];
+        monthlyProgress: number[];
+        improvementRate: number;
+    };
+    achievements: {
+        id: string;
+        name: string;
+        description: string;
+        earnedDate: ISOString;
+        icon: string;
+    }[];
+    lastUpdated: ISOString;
+}
+
+export interface SubjectProgress {
+    completedTasks: number;
+    totalTasks: number;
+    completionPercentage: number;
+    timeSpent: number;
+    strength: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export interface PerformanceTrends {
+    weeklyProgress: number[];
+    monthlyProgress: number[];
+    improvementRate: number;
 }
 
 export interface MCQResult {
@@ -49,302 +473,213 @@ export interface MockRun {
     usesNegativeMarking: boolean;
 }
 
-export interface Question {
-    stem: string;
-    options: string[];
-    ans: number;
-}
+// ============================= REQUEST/RESPONSE TYPES =============================
 
-export interface Topic {
-    id: TopicID;
-    name: string;
-}
-
-// --- NEW TYPES from SPECIFICATION ---
-
-// Content & Resource Hub
-export type ArticleID = string;
-export type DailyQuizID = string;
-export type ResourceID = string;
-export type NoteID = string;
-export type DeckID = string;
-export type CardID = string;
-
-export interface CurrentAffairsArticle {
-    id: ArticleID;
-    title: string;
-    publicationDate: ISOString;
-    source: string;
-    summary: string;
-    content: string;
-    relevantTopicIds: TopicID[];
-    mediaType: "article" | "mindmap" | "infographic";
-    mediaUrl?: string;
-}
-
-export interface DailyQuizQuestion {
-    question: string;
-    options: string[];
-    correctAnswerIndex: number;
-    explanation: string;
-}
-
-export interface DailyQuiz {
-    id: DailyQuizID;
-    quizDate: DateString;
-    title: string;
-    questions: DailyQuizQuestion[];
-}
-
-export interface UserQuizAttempt {
-    userId: UserID;
-    quizId: DailyQuizID;
-    startedAt: ISOString;
-    completedAt?: ISOString;
-    answers: { [questionIndex: number]: number };
-    score: number;
-}
-
-export interface CuratedResource {
-    id: ResourceID;
-    title: string;
-    authorOrSource: string;
-    type: "book" | "report" | "website" | "video";
-    url: string;
-    description: string;
-    topicIds: TopicID[];
-}
-
-export interface UserNote {
-    id: NoteID;
-    userId: UserID;
-    title: string;
-    content?: string;
-    fileUrl?: string;
-    fileType?: "pdf" | "docx" | "jpg";
-    createdAt: ISOString;
-    updatedAt: ISOString;
-    topicIds: TopicID[];
-}
-
-export interface Flashcard {
-    id: CardID;
-    deckId: DeckID;
-    front: string;
-    back: string;
-}
-
-export interface FlashcardDeck {
-    id: DeckID;
+export interface CreateStudyPlanRequest {
     title: string;
     description: string;
-    topicId: TopicID;
-    isOfficial: boolean;
-    authorId?: UserID;
-}
-
-export interface UserFlashcardInstance {
-    userId: UserID;
-    cardId: CardID;
-    deckId: DeckID;
-    lastReviewedAt: ISOString;
-    nextReviewDate: DateString;
-    easinessFactor: number;
-    intervalDays: number;
-    repetitionCount: number;
-}
-
-
-// Community & Collaborative Learning
-export type SubmissionID = string;
-export type ReviewID = string;
-export type GroupID = string;
-export type ForumPostID = string;
-
-export interface AnswerSubmission {
-    id: SubmissionID;
-    authorId: UserID;
-    questionText: string;
-    answerText: string;
-    submittedAt: ISOString;
-    topicId: TopicID;
-    status: "pending_review" | "reviewed" | "closed";
-}
-
-export interface PeerReview {
-    id: ReviewID;
-    submissionId: SubmissionID;
-    reviewerId: UserID;
-    reviewedAt: ISOString;
-    feedback: string;
-    rubricScores: {
-        structure: number;
-        contentClarity: number;
-        relevance: number;
+    startDate: DateString;
+    endDate: DateString;
+    targetHoursPerDay: number;
+    difficultyLevel: DifficultyLevel;
+    subjects: {
+        mandatory: SubjectArea[];
+        optional: SubjectArea[];
+        languages?: string[];
+    };
+    preferences?: {
+        studyPattern: StudyPattern;
+        breakDuration: number;
+        weeklyOffDays: string[];
+        aiRecommendations: boolean;
+    };
+    aiMetadata?: {
+        learningStyle: string;
+        strengthAreas: SubjectArea[];
+        weaknessAreas: SubjectArea[];
     };
 }
 
-export interface StudyGroup {
-    id: GroupID;
-    name: string;
+export interface CreateTaskRequest {
+    title: string;
     description: string;
-    createdAt: ISOString;
-    adminId: UserID;
-    memberIds: UserID[];
+    taskType: TaskType;
+    subjectArea: SubjectArea;
+    subject: string;
+    priority: TaskPriority;
+    estimatedDurationMinutes: number;
+    dueDate: DateString;
+    dueTime?: TimeString;
+    scheduledStartTime?: TimeString;
+    scheduledEndTime?: TimeString;
+    isMandatory?: boolean;
+    isRecurring?: boolean;
+    taskMetadata?: TaskMetadata;
+    resources?: TaskResources;
 }
 
-export interface GroupGoal {
-    groupId: GroupID;
-    title: string;
-    targetDate: DateString;
-    isCompleted: boolean;
+export interface UpdateTaskRequest {
+    title?: string;
+    description?: string;
+    priority?: TaskPriority;
+    estimatedDurationMinutes?: number;
+    dueDate?: DateString;
+    dueTime?: TimeString;
+    scheduledStartTime?: TimeString;
+    scheduledEndTime?: TimeString;
+    taskMetadata?: TaskMetadata;
+    resources?: TaskResources;
 }
 
-export interface GroupChatMessage {
-    groupId: GroupID;
-    senderId: UserID;
-    message: string;
-    sentAt: ISOString;
+export interface CompleteTaskRequest {
+    actualDurationMinutes: number;
+    completionPercentage: number;
+    difficultyRating?: number;
+    satisfactionRating?: number;
+    notes?: string;
+    progressData?: TaskProgressData;
 }
 
-export interface ForumPost {
-    id: ForumPostID;
-    authorId: UserID;
-    topicId: TopicID;
-    title: string;
-    content: string;
-    createdAt: ISOString;
-    isPinned: boolean;
-    isLocked: boolean;
+export interface DeferTaskRequest {
+    reason: string;
+    deferToDate: DateString;
+    deferToTime?: TimeString;
 }
 
-export interface ForumReply {
-    postId: ForumPostID;
-    authorId: UserID;
-    content: string;
-    createdAt: ISOString;
-    isAcceptedAnswer: boolean;
-}
+// ============================= APP STATE TYPES =============================
 
-// Mentor & Expert Connect
-export type MentorID = string;
-export type SessionID = string;
-export type WebinarID = string;
-
-export interface MentorProfile {
-    id: MentorID;
-    userId: UserID;
-    name: string;
-    imageUrl: string;
-    headline: string;
-    bio: string;
-    expertise: TopicID[];
-    hourlyRate: number;
-    availabilitySlots: ISOString[];
-}
-
-export interface MentorshipSession {
-    id: SessionID;
-    mentorId: MentorID;
-    studentId: UserID;
-    scheduledTime: ISOString;
-    durationMins: 30 | 60;
-    status: "scheduled" | "completed" | "cancelled";
-    paymentId: string;
-    videoCallUrl: string;
-}
-
-export interface Webinar {
-    id: WebinarID;
-    title: string;
-    hostId: MentorID;
-    description: string;
-    scheduledTime: ISOString;
-    durationMins: number;
-    registrationLink: string;
-    recordingUrl?: string;
-}
-
-
-// Advanced Personalization
-export type RecommendationID = string;
-
-export interface AIRecommendation {
-    id: RecommendationID;
-    userId: UserID;
-    createdAt: ISOString;
-    type: "revise_topic" | "attempt_mock" | "read_article" | "watch_video";
-    relatedTopicId?: TopicID;
-    relatedResourceId?: ResourceID | ArticleID;
-    reasoning: string;
-    isCompleted: boolean;
-}
-
-
-// --- App State & Actions ---
 export interface AppState {
     currentUser: User | null;
     isProUser: boolean;
     userRole: "student" | "mentor" | "admin";
     activeFeature: string;
     studyConfiguration: StudyConfig;
-    studyPlan: PlanDay[];
-    currentVisibleDay: number;
+    studyPlans: StudyPlan[];
+    currentStudyPlan: StudyPlan | null;
     dailyStreak: number;
     lastStreakUpdateDate: DateString | null;
     mcqPerformance: MCQResult;
     mockTestHistory: MockRun[];
-    // New state properties
-    recommendations: AIRecommendation[];
+    recommendations: AIRecommendation[]; // AI recommendations
 }
 
 export interface AppActions {
-    // Existing actions
-    signIn: (email: string, name: string) => void;
-    signOut: () => void;
-    upgradeToPro: () => void;
-    downgradeFromPro: () => void; // Added this action
-    switchRole: () => void;
+    // Core navigation - auth actions are handled by AuthSlice
     navigateTo: (feature: string) => void;
-    updateStudyConfig: (config: Partial<StudyConfig>) => void;
-    generateStudyPlan: () => void;
-    viewDay: (dayNumber: number) => void;
-    toggleTaskCompletion: (taskId: TaskID) => void;
-    deferTask: (taskId: TaskID) => void;
-    updateStreak: () => void;
-    recordMcqResult: (topicId: TopicID, correct: number, total: number) => void;
-    saveMockTest: (runData: MockRun) => void;
-    resetApplicationState: () => void;
-
-    // New actions from spec
-    fetchCurrentAffairs: (date: DateString) => Promise<CurrentAffairsArticle[]>;
-    fetchDailyQuiz: (date: DateString) => Promise<DailyQuiz>;
-    submitQuizAttempt: (attempt: UserQuizAttempt) => void;
-    fetchCuratedResources: (topicId?: TopicID) => Promise<CuratedResource[]>;
-    createUserNote: (noteData: Omit<UserNote, 'id' | 'createdAt' | 'updatedAt'>) => void;
-    updateUserNote: (noteId: NoteID, updates: Partial<UserNote>) => void;
-    deleteUserNote: (noteId: NoteID) => void;
-    fetchFlashcardDecks: (topicId?: TopicID) => Promise<FlashcardDeck[]>;
-    fetchFlashcardsForDeck: (deckId: DeckID) => Promise<Flashcard[]>;
-    updateFlashcardReview: (reviewData: { cardId: CardID, performance: 'easy' | 'good' | 'hard' }) => void;
-    submitAnswerForReview: (submission: Omit<AnswerSubmission, 'id' | 'submittedAt' | 'status'>) => void;
-    fetchSubmissionsToReview: () => Promise<AnswerSubmission[]>;
-    submitPeerReview: (review: Omit<PeerReview, 'id' | 'reviewedAt'>) => void;
-    createStudyGroup: (groupData: { name: string, description: string }) => void;
-    joinStudyGroup: (groupId: GroupID) => void;
-    sendGroupChatMessage: (message: Omit<GroupChatMessage, 'sentAt'>) => void;
-    createForumPost: (post: Omit<ForumPost, 'id' | 'createdAt' | 'isPinned' | 'isLocked'>) => void;
-    replyToForumPost: (reply: Omit<ForumReply, 'createdAt' | 'isAcceptedAnswer'>) => void;
-    fetchMentors: (topicId?: TopicID) => Promise<MentorProfile[]>;
-    bookMentorshipSession: (sessionData: { mentorId: MentorID, time: ISOString }) => Promise<{ success: boolean, sessionId: SessionID }>;
-    fetchUpcomingWebinars: () => Promise<Webinar[]>;
-    fetchRecordedWebinars: () => Promise<Webinar[]>;
-    fetchAIRecommendations: () => Promise<AIRecommendation[]>;
-    markRecommendationAsDone: (recommendationId: RecommendationID) => void;
-    runAdaptivePlannerAnalysis: () => void;
 }
 
-export type AppStore = AppState & AppActions;
+// ============================= LEGACY COMPATIBILITY =============================
 
-// Re-export auth types
+// Keep these for existing components that haven't been updated yet
+export interface Topic {
+    id: TopicID;
+    name: string;
+}
+
+export interface Question {
+    stem: string;
+    options: string[];
+    ans: number;
+}
+
+// These will be removed in future versions
+export interface UserQuizAttempt {
+    userId: UserID;
+    quizId: string;
+    startedAt: ISOString;
+    completedAt?: ISOString;
+    answers: { [questionIndex: number]: number };
+}
+
+// ============================= CONTENT HUB TYPES (DISABLED) =============================
+
+// These types exist but are not used since Content Hub is disabled
+export interface CurrentAffairsArticle {
+    id: string;
+    title: string;
+    content: string;
+    publishedDate: DateString;
+    source: string;
+    tags: string[];
+}
+
+export interface DailyQuiz {
+    id: string;
+    date: DateString;
+    questions: Question[];
+}
+
+export interface CuratedResource {
+    id: string;
+    title: string;
+    description: string;
+    type: 'PDF' | 'VIDEO' | 'ARTICLE' | 'BOOK';
+    url: string;
+    tags: string[];
+}
+
+export interface UserNote {
+    id: string;
+    userId: string;
+    title: string;
+    content: string;
+    topicIds: string[];
+    createdAt: ISOString;
+    updatedAt: ISOString;
+}
+
+export interface FlashcardDeck {
+    id: string;
+    title: string;
+    description: string;
+    cardCount: number;
+}
+
+export interface Flashcard {
+    id: string;
+    deckId: string;
+    front: string;
+    back: string;
+    difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+}
+
+// ============================= COMMUNITY TYPES =============================
+
+export interface ForumPost {
+    id: string;
+    authorId: string;
+    topicId: string;
+    title: string;
+    content: string;
+    createdAt: ISOString;
+    isPinned?: boolean;
+    isLocked?: boolean;
+}
+
+export interface ForumReply {
+    id: string;
+    postId: string;
+    authorId: string;
+    content: string;
+    createdAt: ISOString;
+    isAccepted?: boolean;
+}
+
+export interface StudyGroup {
+    id: string;
+    name: string;
+    description: string;
+    memberCount: number;
+    maxMembers: number;
+    isPublic: boolean;
+    createdAt: ISOString;
+    topicAreas: SubjectArea[];
+}
+
+// ============================= EXPORTS =============================
+
+// Re-export everything for convenience
+export * from './errors';
 export * from './auth';
+
+// Export all types - no need for default export since these are all interfaces/types

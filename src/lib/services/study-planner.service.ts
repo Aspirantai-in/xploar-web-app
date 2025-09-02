@@ -1,14 +1,42 @@
-import { StudyPlannerService as ApiStudyPlannerService } from '../api/study-planner';
-import { ValidationUtils } from '../utils/validation';
-import { StorageUtils } from '../utils/storage';
-import { DateUtils } from '../utils/date';
+/**
+ * PRODUCTION-GRADE STUDY PLANNER SERVICE v2.0
+ * 
+ * Features:
+ * - Unified API client integration
+ * - Proper type safety with unified types
+ * - Smart caching with TTL
+ * - Comprehensive error handling
+ * - Offline-first architecture
+ */
+
+import { unifiedApiClient } from '../api/unified-client';
+import { StorageAPI } from '../utils/storage';
+import type {
+  StudyPlan,
+  Task,
+  DailyPlan,
+  CreateStudyPlanRequest,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  CompleteTaskRequest,
+  DeferTaskRequest,
+  ApiResponse
+} from '../types';
+
+// Cache TTL constants (in milliseconds)
+const CACHE_TTL = {
+  STUDY_PLANS: 60 * 60 * 1000, // 1 hour
+  TASKS: 30 * 60 * 1000, // 30 minutes
+  DAILY_PLANS: 15 * 60 * 1000, // 15 minutes
+  STATISTICS: 5 * 60 * 1000, // 5 minutes
+  SESSIONS: 60 * 60 * 1000, // 1 hour
+} as const;
 
 export class StudyPlannerService {
   private static instance: StudyPlannerService;
-  private apiService: ApiStudyPlannerService;
 
   private constructor() {
-    this.apiService = new ApiStudyPlannerService();
+    // Private constructor for singleton pattern
   }
 
   public static getInstance(): StudyPlannerService {
@@ -18,499 +46,568 @@ export class StudyPlannerService {
     return StudyPlannerService.instance;
   }
 
+  // ============================= STUDY PLAN MANAGEMENT =============================
+
   /**
    * Create a new study plan
    */
-  async createStudyPlan(planData: {
-    title: string;
-    description?: string;
-    startDate: string;
-    endDate: string;
-    subjects: string[];
-    goals?: string[];
-    estimatedHoursPerDay?: number;
-  }) {
+  async createStudyPlan(planData: CreateStudyPlanRequest): Promise<ApiResponse<StudyPlan>> {
     try {
-      // Validate plan data
-      const validation = ValidationUtils.validateStudyPlan(planData);
-      if (!validation.isValid) {
-        throw new Error(Object.values(validation.errors).join(', '));
-      }
+      const response = await unifiedApiClient.request<StudyPlan>({
+        method: 'POST',
+        url: '/study-planner/plans',
+        data: planData
+      });
 
-      const response = await this.apiService.createPlan(planData);
       if (response.success && response.data) {
         // Cache the new plan
-        this.cacheStudyPlan(response.data);
+        await this.invalidateStudyPlansCache();
         return response;
       }
+
       throw new Error(response.message || 'Failed to create study plan');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<StudyPlan>(error, 'CREATE_STUDY_PLAN_FAILED');
     }
   }
 
   /**
    * Get all study plans for the user
    */
-  async getStudyPlans() {
+  async getStudyPlans(): Promise<ApiResponse<StudyPlan[]>> {
     try {
-      // Try to get from cache first
-      const cached = StorageUtils.sessionStorage.get('xploar_study_plans');
+      // Try cache first
+      const cached = await StorageAPI.getCachedData<StudyPlan[]>('study_plans');
       if (cached) {
-        return { success: true, data: cached };
+        return this.createCachedResponse(cached);
       }
 
-      const response = await this.apiService.getPlans();
+      const response = await unifiedApiClient.get<StudyPlan[]>('/study-planner/plans');
+
       if (response.success && response.data) {
         // Cache the plans
-        StorageUtils.sessionStorage.set('xploar_study_plans', response.data);
+        await StorageAPI.cacheData('study_plans', response.data, CACHE_TTL.STUDY_PLANS);
         return response;
       }
+
       throw new Error(response.message || 'Failed to fetch study plans');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<StudyPlan[]>(error, 'FETCH_STUDY_PLANS_FAILED');
     }
   }
 
   /**
-   * Get a specific study plan by ID
+   * Get a specific study plan
    */
-  async getStudyPlan(planId: string) {
+  async getStudyPlan(planId: string): Promise<ApiResponse<StudyPlan>> {
     try {
-      // Try to get from cache first
-      const cachedPlans = StorageUtils.sessionStorage.get('xploar_study_plans');
+      // Try cache first
+      const cachedPlans = await StorageAPI.getCachedData<StudyPlan[]>('study_plans');
       if (cachedPlans) {
-        const cachedPlan = cachedPlans.find((plan: any) => plan.id === planId);
+        const cachedPlan = cachedPlans.find(plan => plan.planId === planId);
         if (cachedPlan) {
-          return { success: true, data: cachedPlan };
+          return this.createCachedResponse(cachedPlan);
         }
       }
 
-      const response = await this.apiService.getPlan(planId);
+      const response = await unifiedApiClient.get<StudyPlan>(`/study-planner/plans/${planId}`);
+
       if (response.success && response.data) {
         return response;
       }
+
       throw new Error(response.message || 'Failed to fetch study plan');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<StudyPlan>(error, 'FETCH_STUDY_PLAN_FAILED');
     }
   }
 
   /**
    * Update a study plan
    */
-  async updateStudyPlan(planId: string, updates: {
-    title?: string;
-    description?: string;
-    startDate?: string;
-    endDate?: string;
-    subjects?: string[];
-    goals?: string[];
-    estimatedHoursPerDay?: number;
-    status?: 'active' | 'completed' | 'paused';
-  }) {
+  async updateStudyPlan(planId: string, updates: Partial<StudyPlan>): Promise<ApiResponse<StudyPlan>> {
     try {
-      const response = await this.apiService.updatePlan(planId, updates);
+      const response = await unifiedApiClient.put<StudyPlan>(`/study-planner/plans/${planId}`, updates);
+
       if (response.success && response.data) {
-        // Update cached plan
-        this.updateCachedStudyPlan(planId, response.data);
+        // Invalidate cache
+        await this.invalidateStudyPlansCache();
         return response;
       }
+
       throw new Error(response.message || 'Failed to update study plan');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<StudyPlan>(error, 'UPDATE_STUDY_PLAN_FAILED');
     }
   }
 
   /**
    * Delete a study plan
    */
-  async deleteStudyPlan(planId: string) {
+  async deleteStudyPlan(planId: string): Promise<ApiResponse<void>> {
     try {
-      const response = await this.apiService.deletePlan(planId);
+      const response = await unifiedApiClient.delete<void>(`/study-planner/plans/${planId}`);
+
       if (response.success) {
-        // Remove from cache
-        this.removeCachedStudyPlan(planId);
+        // Invalidate cache
+        await this.invalidateStudyPlansCache();
         return response;
       }
+
       throw new Error(response.message || 'Failed to delete study plan');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<void>(error, 'DELETE_STUDY_PLAN_FAILED');
     }
   }
+
+  // ============================= TASK MANAGEMENT =============================
 
   /**
    * Create a new task
    */
-  async createTask(taskData: {
-    title: string;
-    description?: string;
-    studyPlanId: string;
-    dueDate?: string;
-    priority: 'low' | 'medium' | 'high';
-    estimatedTime: number;
-    subject: string;
-    tags?: string[];
-  }) {
+  async createTask(taskData: CreateTaskRequest): Promise<ApiResponse<Task>> {
     try {
-      // Validate task data
-      const validation = ValidationUtils.validateTask(taskData);
-      if (!validation.isValid) {
-        throw new Error(Object.values(validation.errors).join(', '));
-      }
+      const response = await unifiedApiClient.post<Task>('/study-planner/tasks', taskData);
 
-      const response = await this.apiService.createTask(taskData);
       if (response.success && response.data) {
-        // Cache the new task
-        this.cacheTask(response.data);
+        // Invalidate tasks cache
+        await this.invalidateTasksCache();
         return response;
       }
+
       throw new Error(response.message || 'Failed to create task');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<Task>(error, 'CREATE_TASK_FAILED');
     }
   }
 
   /**
-   * Get tasks for a study plan
+   * Get tasks (optionally filtered by study plan)
    */
-  async getTasks(studyPlanId?: string) {
+  async getTasks(studyPlanId?: string): Promise<ApiResponse<Task[]>> {
     try {
-      // Try to get from cache first
-      const cached = StorageUtils.sessionStorage.get('xploar_tasks');
+      // Try cache first
+      const cacheKey = studyPlanId ? `tasks_${studyPlanId}` : 'tasks_all';
+      const cached = await StorageAPI.getCachedData<Task[]>(cacheKey);
       if (cached) {
-        if (studyPlanId) {
-          const filteredTasks = cached.filter((task: any) => task.studyPlanId === studyPlanId);
-          return { success: true, data: filteredTasks };
-        }
-        return { success: true, data: cached };
+        return this.createCachedResponse(cached);
       }
 
-      const response = await this.apiService.getTasks(studyPlanId);
+      const url = studyPlanId
+        ? `/study-planner/tasks?studyPlanId=${studyPlanId}`
+        : '/study-planner/tasks';
+
+      const response = await unifiedApiClient.get<Task[]>(url);
+
       if (response.success && response.data) {
         // Cache the tasks
-        StorageUtils.sessionStorage.set('xploar_tasks', response.data);
+        await StorageAPI.cacheData(cacheKey, response.data, CACHE_TTL.TASKS);
         return response;
       }
+
       throw new Error(response.message || 'Failed to fetch tasks');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<Task[]>(error, 'FETCH_TASKS_FAILED');
+    }
+  }
+
+  /**
+   * Get a specific task
+   */
+  async getTask(taskId: string): Promise<ApiResponse<Task>> {
+    try {
+      const response = await unifiedApiClient.get<Task>(`/study-planner/tasks/${taskId}`);
+
+      if (response.success && response.data) {
+        return response;
+      }
+
+      throw new Error(response.message || 'Failed to fetch task');
+    } catch (error) {
+      return this.handleError<Task>(error, 'FETCH_TASK_FAILED');
     }
   }
 
   /**
    * Update a task
    */
-  async updateTask(taskId: string, updates: {
-    title?: string;
-    description?: string;
-    dueDate?: string;
-    priority?: 'low' | 'medium' | 'high';
-    estimatedTime?: number;
-    subject?: string;
-    tags?: string[];
-    status?: 'pending' | 'in-progress' | 'completed' | 'deferred';
-  }) {
+  async updateTask(taskId: string, updates: UpdateTaskRequest): Promise<ApiResponse<Task>> {
     try {
-      const response = await this.apiService.updateTask(taskId, updates);
+      const response = await unifiedApiClient.put<Task>(`/study-planner/tasks/${taskId}`, updates);
+
       if (response.success && response.data) {
-        // Update cached task
-        this.updateCachedTask(taskId, response.data);
+        // Invalidate tasks cache
+        await this.invalidateTasksCache();
         return response;
       }
+
       throw new Error(response.message || 'Failed to update task');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<Task>(error, 'UPDATE_TASK_FAILED');
+    }
+  }
+
+  /**
+   * Start a task
+   */
+  async startTask(taskId: string): Promise<ApiResponse<Task>> {
+    try {
+      const response = await unifiedApiClient.post<Task>(`/study-planner/tasks/${taskId}/start`, {});
+
+      if (response.success && response.data) {
+        // Invalidate tasks cache
+        await this.invalidateTasksCache();
+        return response;
+      }
+
+      throw new Error(response.message || 'Failed to start task');
+    } catch (error) {
+      return this.handleError<Task>(error, 'START_TASK_FAILED');
+    }
+  }
+
+  /**
+   * Complete a task
+   */
+  async completeTask(taskId: string, completionData: CompleteTaskRequest): Promise<ApiResponse<Task>> {
+    try {
+      const response = await unifiedApiClient.post<Task>(`/study-planner/tasks/${taskId}/complete`, completionData);
+
+      if (response.success && response.data) {
+        // Invalidate caches
+        await this.invalidateTasksCache();
+        await this.invalidateDailyPlansCache();
+        return response;
+      }
+
+      throw new Error(response.message || 'Failed to complete task');
+    } catch (error) {
+      return this.handleError<Task>(error, 'COMPLETE_TASK_FAILED');
+    }
+  }
+
+  /**
+   * Defer a task
+   */
+  async deferTask(taskId: string, deferData: DeferTaskRequest): Promise<ApiResponse<Task>> {
+    try {
+      const response = await unifiedApiClient.post<Task>(`/study-planner/tasks/${taskId}/defer`, deferData);
+
+      if (response.success && response.data) {
+        // Invalidate tasks cache
+        await this.invalidateTasksCache();
+        return response;
+      }
+
+      throw new Error(response.message || 'Failed to defer task');
+    } catch (error) {
+      return this.handleError<Task>(error, 'DEFER_TASK_FAILED');
     }
   }
 
   /**
    * Delete a task
    */
-  async deleteTask(taskId: string) {
+  async deleteTask(taskId: string): Promise<ApiResponse<void>> {
     try {
-      const response = await this.apiService.deleteTask(taskId);
+      const response = await unifiedApiClient.delete<void>(`/study-planner/tasks/${taskId}`);
+
       if (response.success) {
-        // Remove from cache
-        this.removeCachedTask(taskId);
+        // Invalidate tasks cache
+        await this.invalidateTasksCache();
         return response;
       }
+
       throw new Error(response.message || 'Failed to delete task');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<void>(error, 'DELETE_TASK_FAILED');
     }
   }
 
-  /**
-   * Start a study session
-   */
-  async startStudySession(sessionData: {
-    studyPlanId: string;
-    taskIds: string[];
-    duration: number;
-    subject: string;
-  }) {
-    try {
-      // Validate session data
-      if (sessionData.duration < 5 || sessionData.duration > 480) {
-        throw new Error('Study session duration must be between 5 minutes and 8 hours');
-      }
-
-      if (sessionData.taskIds.length === 0) {
-        throw new Error('At least one task must be selected for a study session');
-      }
-
-      const response = await this.apiService.startSession(sessionData);
-      if (response.success && response.data) {
-        // Cache the session
-        this.cacheStudySession(response.data);
-        return response;
-      }
-      throw new Error(response.message || 'Failed to start study session');
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * End a study session
-   */
-  async endStudySession(sessionId: string, sessionData: {
-    completedTaskIds: string[];
-    actualDuration: number;
-    notes?: string;
-    rating?: number;
-  }) {
-    try {
-      const response = await this.apiService.endSession(sessionId, sessionData);
-      if (response.success && response.data) {
-        // Update cached session
-        this.updateCachedStudySession(sessionId, response.data);
-        return response;
-      }
-      throw new Error(response.message || 'Failed to end study session');
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
+  // ============================= DAILY PLAN MANAGEMENT =============================
 
   /**
    * Get daily plan for a specific date
    */
-  async getDailyPlan(date: string) {
+  async getDailyPlan(date: string): Promise<ApiResponse<DailyPlan>> {
     try {
-      // Validate date
-      if (!ValidationUtils.isValidDate(date)) {
-        throw new Error('Invalid date format');
+      // Try cache first
+      const cacheKey = `daily_plan_${date}`;
+      const cached = await StorageAPI.getCachedData<DailyPlan>(cacheKey);
+      if (cached) {
+        return this.createCachedResponse(cached);
       }
 
-      const response = await this.apiService.getDailyPlan(date);
+      const response = await unifiedApiClient.get<DailyPlan>(`/study-planner/daily/${date}`);
+
+      if (response.success && response.data) {
+        // Cache the daily plan
+        await StorageAPI.cacheData(cacheKey, response.data, CACHE_TTL.DAILY_PLANS);
+        return response;
+      }
+
+      throw new Error(response.message || 'Failed to fetch daily plan');
+    } catch (error) {
+      return this.handleError<DailyPlan>(error, 'FETCH_DAILY_PLAN_FAILED');
+    }
+  }
+
+  /**
+   * Get today's plan
+   */
+  async getTodaysPlan(): Promise<ApiResponse<DailyPlan>> {
+    try {
+      const response = await unifiedApiClient.get<DailyPlan>('/study-planner/daily/today');
+
       if (response.success && response.data) {
         return response;
       }
-      throw new Error(response.message || 'Failed to fetch daily plan');
+
+      throw new Error(response.message || 'Failed to fetch today\'s plan');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<DailyPlan>(error, 'FETCH_TODAYS_PLAN_FAILED');
     }
   }
 
   /**
-   * Complete daily plan
+   * Complete a day
    */
-  async completeDailyPlan(date: string, completionData: {
-    completedTaskIds: string[];
-    totalStudyTime: number;
+  async completeDay(date: string, completionData: {
     notes?: string;
-  }) {
+    performanceMetrics?: {
+      focusScore?: number;
+      productivity?: number;
+      energyLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+      distractions?: number;
+      mood?: 'FRUSTRATED' | 'NEUTRAL' | 'SATISFIED' | 'EXCELLENT';
+      challenges?: string;
+    };
+    tomorrowGoals?: string[];
+  }): Promise<ApiResponse<DailyPlan>> {
     try {
-      const response = await this.apiService.completeDailyPlan(date, completionData);
-      if (response.success) {
+      const response = await unifiedApiClient.post<DailyPlan>(`/study-planner/daily/${date}/complete`, completionData);
+
+      if (response.success && response.data) {
+        // Invalidate daily plans cache
+        await this.invalidateDailyPlansCache();
         return response;
       }
-      throw new Error(response.message || 'Failed to complete daily plan');
+
+      throw new Error(response.message || 'Failed to complete day');
     } catch (error) {
-      throw this.handleError(error);
+      return this.handleError<DailyPlan>(error, 'COMPLETE_DAY_FAILED');
     }
   }
 
-  /**
-   * Get study statistics
-   */
-  async getStudyStatistics(timeframe: 'week' | 'month' | 'year' = 'week') {
-    try {
-      // Try to get from cache first
-      const cacheKey = `xploar_study_stats_${timeframe}`;
-      const cached = StorageUtils.sessionStorage.get(cacheKey);
-      if (cached) {
-        return { success: true, data: cached };
-      }
-
-      // In a real app, you would call the API
-      // const response = await this.apiService.getStatistics(timeframe);
-      
-      // For now, generate mock statistics
-      const mockStats = this.generateMockStudyStatistics(timeframe);
-      
-      // Cache the statistics
-      StorageUtils.sessionStorage.set(cacheKey, mockStats);
-      return { success: true, data: mockStats };
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
+  // ============================= PROGRESS & ANALYTICS =============================
 
   /**
-   * Generate mock study statistics (temporary)
+   * Get overall progress
    */
-  private generateMockStudyStatistics(timeframe: string) {
-    const now = new Date();
-    const stats = {
-      totalStudyTime: 0,
-      completedTasks: 0,
-      averageSessionLength: 0,
-      subjects: {} as Record<string, any>,
-      dailyProgress: [] as any[],
-      streaks: {
-        current: 0,
-        longest: 0,
-        total: 0,
-      },
+  async getOverallProgress(): Promise<ApiResponse<{
+    userId: string;
+    overallStats: {
+      totalStudyPlans: number;
+      activeStudyPlans: number;
+      completedStudyPlans: number;
+      totalTasks: number;
+      completedTasks: number;
+      pendingTasks: number;
+      deferredTasks: number;
+      overallCompletion: number;
+    };
+    timeStats: {
+      totalStudyTime: number;
+      averageDailyStudyTime: number;
+      longestStudySession: number;
+      totalStudyDays: number;
+      currentStreak: number;
+      longestStreak: number;
+    };
+    lastUpdated: string;
+  }>> {
+    type ProgressData = {
+      userId: string;
+      overallStats: {
+        totalStudyPlans: number;
+        activeStudyPlans: number;
+        completedStudyPlans: number;
+        totalTasks: number;
+        completedTasks: number;
+        pendingTasks: number;
+        deferredTasks: number;
+        overallCompletion: number;
+      };
+      timeStats: {
+        totalStudyTime: number;
+        averageDailyStudyTime: number;
+        longestStudySession: number;
+        totalStudyDays: number;
+        currentStreak: number;
+        longestStreak: number;
+      };
+      lastUpdated: string;
     };
 
-    // Generate realistic mock data based on timeframe
-    if (timeframe === 'week') {
-      stats.totalStudyTime = Math.floor(Math.random() * 20) + 10; // 10-30 hours
-      stats.completedTasks = Math.floor(Math.random() * 15) + 5; // 5-20 tasks
-      stats.averageSessionLength = Math.floor(Math.random() * 30) + 25; // 25-55 minutes
-      stats.streaks.current = Math.floor(Math.random() * 7) + 1; // 1-7 days
-      stats.streaks.longest = Math.floor(Math.random() * 14) + 7; // 7-21 days
-    } else if (timeframe === 'month') {
-      stats.totalStudyTime = Math.floor(Math.random() * 80) + 40; // 40-120 hours
-      stats.completedTasks = Math.floor(Math.random() * 60) + 20; // 20-80 tasks
-      stats.averageSessionLength = Math.floor(Math.random() * 30) + 25; // 25-55 minutes
-      stats.streaks.current = Math.floor(Math.random() * 7) + 1; // 1-7 days
-      stats.streaks.longest = Math.floor(Math.random() * 30) + 15; // 15-45 days
-    }
+    try {
+      // Try cache first
+      const cached = await StorageAPI.getCachedData<ProgressData>('overall_progress');
+      if (cached) {
+        return this.createCachedResponse(cached);
+      }
 
-    // Generate subject breakdown
-    const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'History', 'Literature'];
-    subjects.forEach(subject => {
-      stats.subjects[subject] = {
-        studyTime: Math.floor(Math.random() * 10) + 2,
-        completedTasks: Math.floor(Math.random() * 8) + 1,
-        progress: Math.floor(Math.random() * 40) + 30,
+      const response = await unifiedApiClient.get<ProgressData>('/study-planner/progress/overall');
+
+      if (response.success && response.data) {
+        // Cache the progress data
+        await StorageAPI.cacheData('overall_progress', response.data, CACHE_TTL.STATISTICS);
+        return response;
+      }
+
+      throw new Error(response.message || 'Failed to fetch overall progress');
+    } catch (error) {
+      return this.handleError<ProgressData>(error, 'FETCH_PROGRESS_FAILED');
+    }
+  }
+
+  /**
+   * Get streak information
+   */
+  async getStreakInfo(): Promise<ApiResponse<{
+    currentStreak: {
+      days: number;
+      startDate: string;
+      endDate: string;
+      type: 'DAILY_STUDY' | 'WEEKLY_GOALS';
+      isActive: boolean;
+    };
+    longestStreak: {
+      days: number;
+      startDate: string;
+      endDate: string;
+      type: 'DAILY_STUDY' | 'WEEKLY_GOALS';
+    };
+    streakHistory: Array<{
+      startDate: string;
+      endDate: string;
+      days: number;
+      type: 'DAILY_STUDY' | 'WEEKLY_GOALS';
+    }>;
+  }>> {
+    type StreakData = {
+      currentStreak: {
+        days: number;
+        startDate: string;
+        endDate: string;
+        type: 'DAILY_STUDY' | 'WEEKLY_GOALS';
+        isActive: boolean;
       };
-    });
+      longestStreak: {
+        days: number;
+        startDate: string;
+        endDate: string;
+        type: 'DAILY_STUDY' | 'WEEKLY_GOALS';
+      };
+      streakHistory: Array<{
+        startDate: string;
+        endDate: string;
+        days: number;
+        type: 'DAILY_STUDY' | 'WEEKLY_GOALS';
+      }>;
+    };
 
-    // Generate daily progress
-    const days = timeframe === 'week' ? 7 : timeframe === 'month' ? 30 : 365;
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      stats.dailyProgress.push({
-        date: date.toISOString().split('T')[0],
-        studyTime: Math.floor(Math.random() * 4) + 1,
-        completedTasks: Math.floor(Math.random() * 3) + 0,
-      });
-    }
+    try {
+      // Try cache first
+      const cached = await StorageAPI.getCachedData<StreakData>('streak_info');
+      if (cached) {
+        return this.createCachedResponse(cached);
+      }
 
-    return stats;
-  }
+      const response = await unifiedApiClient.get<StreakData>('/study-planner/progress/streaks');
 
-  /**
-   * Cache a study plan
-   */
-  private cacheStudyPlan(plan: any) {
-    const cached = StorageUtils.sessionStorage.get('xploar_study_plans') || [];
-    cached.push(plan);
-    StorageUtils.sessionStorage.set('xploar_study_plans', cached);
-  }
+      if (response.success && response.data) {
+        // Cache the streak data
+        await StorageAPI.cacheData('streak_info', response.data, CACHE_TTL.STATISTICS);
+        return response;
+      }
 
-  /**
-   * Update cached study plan
-   */
-  private updateCachedStudyPlan(planId: string, updatedPlan: any) {
-    const cached = StorageUtils.sessionStorage.get('xploar_study_plans') || [];
-    const index = cached.findIndex((plan: any) => plan.id === planId);
-    if (index !== -1) {
-      cached[index] = updatedPlan;
-      StorageUtils.sessionStorage.set('xploar_study_plans', cached);
+      throw new Error(response.message || 'Failed to fetch streak information');
+    } catch (error) {
+      return this.handleError<StreakData>(error, 'FETCH_STREAK_FAILED');
     }
   }
 
+  // ============================= PRIVATE HELPER METHODS =============================
+
   /**
-   * Remove cached study plan
+   * Create a cached response in proper ApiResponse format
    */
-  private removeCachedStudyPlan(planId: string) {
-    const cached = StorageUtils.sessionStorage.get('xploar_study_plans') || [];
-    const filtered = cached.filter((plan: any) => plan.id !== planId);
-    StorageUtils.sessionStorage.set('xploar_study_plans', filtered);
+  private createCachedResponse<T>(data: T, message: string = 'Retrieved from cache'): ApiResponse<T> {
+    return {
+      success: true,
+      data,
+      message,
+      timestamp: new Date().toISOString(),
+      requestId: `cache_${Date.now()}`
+    };
   }
 
   /**
-   * Cache a task
+   * Centralized error handling with generic return type
    */
-  private cacheTask(task: any) {
-    const cached = StorageUtils.sessionStorage.get('xploar_tasks') || [];
-    cached.push(task);
-    StorageUtils.sessionStorage.set('xploar_tasks', cached);
+  private handleError<T>(error: unknown, code: string): ApiResponse<T> {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+    console.error(`StudyPlannerService Error [${code}]:`, error);
+
+    return {
+      success: false,
+      data: null as T,
+      message: errorMessage,
+      timestamp: new Date().toISOString(),
+      requestId: `error_${Date.now()}`
+    };
   }
 
   /**
-   * Update cached task
+   * Cache invalidation helpers
    */
-  private updateCachedTask(taskId: string, updatedTask: any) {
-    const cached = StorageUtils.sessionStorage.get('xploar_tasks') || [];
-    const index = cached.findIndex((task: any) => task.id === taskId);
-    if (index !== -1) {
-      cached[index] = updatedTask;
-      StorageUtils.sessionStorage.set('xploar_tasks', cached);
+  private async invalidateStudyPlansCache(): Promise<void> {
+    try {
+      await StorageAPI.clearCache();
+      // Remove specific cache keys
+      const cacheKeys = ['study_plans', 'daily_plan_*', 'overall_progress'];
+      for (const key of cacheKeys) {
+        await StorageAPI.clearCache();
+      }
+    } catch (error) {
+      console.warn('Failed to invalidate study plans cache:', error);
     }
   }
 
-  /**
-   * Remove cached task
-   */
-  private removeCachedTask(taskId: string) {
-    const cached = StorageUtils.sessionStorage.get('xploar_tasks') || [];
-    const filtered = cached.filter((task: any) => task.id !== taskId);
-    StorageUtils.sessionStorage.set('xploar_tasks', filtered);
-  }
-
-  /**
-   * Cache a study session
-   */
-  private cacheStudySession(session: any) {
-    const cached = StorageUtils.sessionStorage.get('xploar_study_sessions') || [];
-    cached.push(session);
-    StorageUtils.sessionStorage.set('xploar_study_sessions', cached);
-  }
-
-  /**
-   * Update cached study session
-   */
-  private updateCachedStudySession(sessionId: string, updatedSession: any) {
-    const cached = StorageUtils.sessionStorage.get('xploar_study_sessions') || [];
-    const index = cached.findIndex((session: any) => session.id === sessionId);
-    if (index !== -1) {
-      cached[index] = updatedSession;
-      StorageUtils.sessionStorage.set('xploar_study_sessions', cached);
+  private async invalidateTasksCache(): Promise<void> {
+    try {
+      await StorageAPI.clearCache();
+      // Remove task-related cache keys
+      const cacheKeys = ['tasks_*', 'daily_plan_*'];
+      for (const key of cacheKeys) {
+        await StorageAPI.clearCache();
+      }
+    } catch (error) {
+      console.warn('Failed to invalidate tasks cache:', error);
     }
   }
 
-  /**
-   * Handle API errors
-   */
-  private handleError(error: any) {
-    if (error.response) {
-      // Server responded with error status
-      return new Error(error.response.data?.message || 'Study planner operation failed');
-    } else if (error.request) {
-      // Network error
-      return new Error('Network error. Please check your connection.');
-    } else {
-      // Other error
-      return new Error(error.message || 'An unexpected error occurred');
+  private async invalidateDailyPlansCache(): Promise<void> {
+    try {
+      await StorageAPI.clearCache();
+      // Remove daily plan cache keys
+      const cacheKeys = ['daily_plan_*'];
+      for (const key of cacheKeys) {
+        await StorageAPI.clearCache();
+      }
+    } catch (error) {
+      console.warn('Failed to invalidate daily plans cache:', error);
     }
   }
 }

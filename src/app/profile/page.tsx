@@ -1,18 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useAuth } from '@/lib/context/auth-context';
+import React, { useState, useRef } from 'react';
+import Image from 'next/image';
+import { useAuth } from '../../lib/context/auth-context';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  MapPin, 
-  BookOpen, 
+import {
+  User,
+  BookOpen,
   Target,
   Settings,
   Edit3,
@@ -21,12 +18,16 @@ import {
   Camera,
   LogOut
 } from 'lucide-react';
+import { UserProfile } from '@/lib/types';
+import { userProfileService } from '@/lib/api';
 
 export default function ProfilePage() {
   const { user, profile, updateProfile, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState(profile || {});
+  const [editedProfile, setEditedProfile] = useState<Partial<UserProfile>>(profile || {});
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
     return null;
@@ -49,19 +50,84 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setEditedProfile(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    setIsUploadingPicture(true);
+    try {
+      const response = await userProfileService.updateProfilePicture(file);
+
+      // Update the profile with new picture URL
+      if (profile?.personalInfo) {
+        await updateProfile({
+          personalInfo: {
+            ...profile.personalInfo,
+            profilePicture: response.profilePictureUrl
+          }
+        });
+      }
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Profile picture upload error:', error);
+      alert('Failed to upload profile picture. Please try again.');
+    } finally {
+      setIsUploadingPicture(false);
+    }
   };
 
-  const handleNestedChange = (parent: string, field: string, value: any) => {
+  const handlePictureClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+
+
+  const handleNestedChange = (
+    parent: keyof UserProfile,
+    field: string,
+    value: unknown
+  ) => {
     setEditedProfile(prev => ({
       ...prev,
       [parent]: {
-        ...prev[parent],
+        ...(prev[parent] as Record<string, unknown>),
         [field]: value,
+      },
+    }));
+  };
+
+  const handleNestedObjectChange = (
+    parent: keyof UserProfile,
+    nestedField: string,
+    field: string,
+    value: unknown
+  ) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      [parent]: {
+        ...(prev[parent] as Record<string, unknown>),
+        [nestedField]: {
+          ...((prev[parent] as Record<string, unknown>)[nestedField] as Record<string, unknown>),
+          [field]: value,
+        },
       },
     }));
   };
@@ -78,7 +144,7 @@ export default function ProfilePage() {
               </div>
               <h1 className="text-2xl font-bold text-gray-900">Xploar</h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
                 Back to Dashboard
@@ -96,12 +162,23 @@ export default function ProfilePage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
         <div className="text-center mb-8">
+          {/* Hidden file input for profile picture upload */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleProfilePictureUpload}
+            className="hidden"
+          />
+
           <div className="relative inline-block">
             <div className="w-32 h-32 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-4xl font-bold text-white mb-4">
               {profile?.personalInfo?.profilePicture ? (
-                <img 
-                  src={profile.personalInfo.profilePicture} 
-                  alt="Profile" 
+                <Image
+                  src={profile.personalInfo.profilePicture}
+                  alt="Profile"
+                  width={128}
+                  height={128}
                   className="w-32 h-32 rounded-full object-cover"
                 />
               ) : (
@@ -109,22 +186,30 @@ export default function ProfilePage() {
               )}
             </div>
             {isEditing && (
-              <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50">
-                <Camera className="w-5 h-5 text-gray-600" />
+              <button
+                onClick={handlePictureClick}
+                disabled={isUploadingPicture}
+                className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUploadingPicture ? (
+                  <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5 text-gray-600" />
+                )}
               </button>
             )}
           </div>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {user.firstName} {user.lastName}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{user.email}</p>
-          
+
           <div className="flex justify-center space-x-4">
             {isEditing ? (
               <>
-                <Button 
-                  onClick={handleSave} 
+                <Button
+                  onClick={handleSave}
                   disabled={isLoading}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                 >
@@ -238,8 +323,8 @@ export default function ProfilePage() {
                     Gender
                   </label>
                   {isEditing ? (
-                    <Select 
-                      value={editedProfile.personalInfo?.gender || ''} 
+                    <Select
+                      value={editedProfile.personalInfo?.gender || ''}
                       onValueChange={(value) => handleNestedChange('personalInfo', 'gender', value)}
                     >
                       <SelectTrigger>
@@ -275,8 +360,8 @@ export default function ProfilePage() {
                     Current Education Level
                   </label>
                   {isEditing ? (
-                    <Select 
-                      value={editedProfile.academicInfo?.currentEducation || ''} 
+                    <Select
+                      value={editedProfile.academicInfo?.currentEducation || ''}
                       onValueChange={(value) => handleNestedChange('academicInfo', 'currentEducation', value)}
                     >
                       <SelectTrigger>
@@ -402,12 +487,9 @@ export default function ProfilePage() {
                     Preferred Study Time
                   </label>
                   {isEditing ? (
-                    <Select 
-                      value={editedProfile.preferences?.studyPreferences?.preferredStudyTime || ''} 
-                      onValueChange={(value) => handleNestedChange('preferences', 'studyPreferences', {
-                        ...editedProfile.preferences?.studyPreferences,
-                        preferredStudyTime: value
-                      })}
+                    <Select
+                      value={editedProfile.preferences?.studyPreferences?.preferredStudyTime || ''}
+                      onValueChange={(value) => handleNestedObjectChange('preferences', 'studyPreferences', 'preferredStudyTime', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select preferred time" />
@@ -432,10 +514,7 @@ export default function ProfilePage() {
                     <Input
                       type="number"
                       value={editedProfile.preferences?.studyPreferences?.breakDuration || ''}
-                      onChange={(e) => handleNestedChange('preferences', 'studyPreferences', {
-                        ...editedProfile.preferences?.studyPreferences,
-                        breakDuration: parseInt(e.target.value)
-                      })}
+                      onChange={(e) => handleNestedObjectChange('preferences', 'studyPreferences', 'breakDuration', parseInt(e.target.value))}
                       placeholder="Enter break duration"
                       min="5"
                       max="60"
@@ -485,18 +564,14 @@ export default function ProfilePage() {
                     <input
                       type="checkbox"
                       checked={editedProfile.preferences?.notificationSettings?.email || false}
-                      onChange={(e) => handleNestedChange('preferences', 'notificationSettings', {
-                        ...editedProfile.preferences?.notificationSettings,
-                        email: e.target.checked
-                      })}
+                      onChange={(e) => handleNestedObjectChange('preferences', 'notificationSettings', 'email', e.target.checked)}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                   ) : (
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      profile?.preferences?.notificationSettings?.email 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs rounded-full ${profile?.preferences?.notificationSettings?.email
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {profile?.preferences?.notificationSettings?.email ? 'Enabled' : 'Disabled'}
                     </span>
                   )}
@@ -511,18 +586,14 @@ export default function ProfilePage() {
                     <input
                       type="checkbox"
                       checked={editedProfile.preferences?.notificationSettings?.sms || false}
-                      onChange={(e) => handleNestedChange('preferences', 'notificationSettings', {
-                        ...editedProfile.preferences?.notificationSettings,
-                        sms: e.target.checked
-                      })}
+                      onChange={(e) => handleNestedObjectChange('preferences', 'notificationSettings', 'sms', e.target.checked)}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                   ) : (
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      profile?.preferences?.notificationSettings?.sms 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs rounded-full ${profile?.preferences?.notificationSettings?.sms
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {profile?.preferences?.notificationSettings?.sms ? 'Enabled' : 'Disabled'}
                     </span>
                   )}
@@ -537,18 +608,14 @@ export default function ProfilePage() {
                     <input
                       type="checkbox"
                       checked={editedProfile.preferences?.notificationSettings?.push || false}
-                      onChange={(e) => handleNestedChange('preferences', 'notificationSettings', {
-                        ...editedProfile.preferences?.notificationSettings,
-                        push: e.target.checked
-                      })}
+                      onChange={(e) => handleNestedObjectChange('preferences', 'notificationSettings', 'push', e.target.checked)}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                   ) : (
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      profile?.preferences?.notificationSettings?.push 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs rounded-full ${profile?.preferences?.notificationSettings?.push
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {profile?.preferences?.notificationSettings?.push ? 'Enabled' : 'Disabled'}
                     </span>
                   )}

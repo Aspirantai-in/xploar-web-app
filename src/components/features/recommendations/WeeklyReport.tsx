@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Target, Clock, TrendingUp, BookOpen } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { UPSC_FOUNDATION } from '@/lib/data/topics';
+// Removed dummy data import
 
 export function WeeklyReport() {
     const { studyPlan, mockTestHistory, studyConfiguration } = useAppStore();
@@ -91,7 +91,7 @@ export function WeeklyReport() {
                                 <TrendingUp className="h-6 w-6 mx-auto text-electric-aqua mb-2" />
                                 <p className="text-2xl font-bold">{weeklyStats.topicsCovered}</p>
                                 <p className="text-sm text-void-black/70">Topics Covered</p>
-                                <p className="text-xs text-void-black/50">out of {UPSC_FOUNDATION.length}</p>
+                                <p className="text-xs text-void-black/50">topics covered</p>
                             </CardContent>
                         </Card>
                     </div>

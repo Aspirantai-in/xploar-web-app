@@ -155,7 +155,7 @@ export class CryptoUtils {
   static verifyPassword(password: string, hashedPassword: string): boolean {
     const [salt, hash] = hashedPassword.split(':');
     const computedHash = this.hashPassword(password, salt);
-    const [_, computedHashValue] = computedHash.split(':');
+    const [, computedHashValue] = computedHash.split(':');
     
     return hash === computedHashValue;
   }

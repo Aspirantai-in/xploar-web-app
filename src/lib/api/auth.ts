@@ -1,4 +1,6 @@
 import { apiClient } from './client';
+import { User, AuthTokens } from '@/lib/types/auth';
+import { JWTService } from '@/lib/utils/jwt';
 
 // Types based on api-doc.md exactly
 export interface UserRegistrationData {
@@ -6,8 +8,8 @@ export interface UserRegistrationData {
   firstName: string;
   lastName: string;
   password: string;
-  mobileNumber: string;
-  countryCode: string;
+  mobileNumber?: string;
+  countryCode?: string;
   preferences: {
     timezone: string;
     language: string;
@@ -22,12 +24,23 @@ export interface UserRegistrationData {
 export interface UserLoginData {
   email: string;
   password: string;
-  deviceInfo: {
-    deviceId: string;
-    deviceType: 'MOBILE' | 'DESKTOP' | 'TABLET';
-    os: string;
-    osVersion: string;
+  deviceInfo?: {
+    deviceId?: string;
+    deviceType?: 'MOBILE' | 'DESKTOP' | 'TABLET';
+    os?: string;
+    osVersion?: string;
   };
+}
+
+// API Response Types - to match actual API structure
+export interface ApiUser {
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
+  permissions: string[];
+  lastLoginAt: string;
 }
 
 export interface AuthResponse {
@@ -38,15 +51,7 @@ export interface AuthResponse {
     refreshToken: string;
     tokenType: string;
     expiresIn: number;
-    user: {
-      userId: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      roles: string[];
-      permissions: string[];
-      lastLoginAt: string;
-    };
+    user: ApiUser;
   };
   timestamp: string;
   requestId: string;
@@ -128,134 +133,467 @@ export interface WhatsAppOTPVerifyResponse {
   requestId: string;
 }
 
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetResponse {
+  success: boolean;
+  message: string;
+  data: {
+    resetToken: string;
+    expiresAt: string;
+  };
+  timestamp: string;
+  requestId: string;
+}
+
+export interface PasswordResetConfirmRequest {
+  resetToken: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface PasswordResetConfirmResponse {
+  success: boolean;
+  message: string;
+  data: {
+    userId: string;
+    email: string;
+  };
+  timestamp: string;
+  requestId: string;
+}
+
+export interface LogoutRequest {
+  refreshToken?: string;
+  deviceId?: string;
+  reason?: string;
+}
+
+export interface LogoutResponse {
+  success: boolean;
+  message: string;
+  data: {
+    loggedOutAt: string;
+    sessionEnded: boolean;
+  };
+  timestamp: string;
+  requestId: string;
+}
+
 export class AuthService {
-  async register(userData: UserRegistrationData) {
+  /**
+   * User registration
+   */
+  async register(data: UserRegistrationData): Promise<RegistrationResponse> {
     try {
-      const response = await apiClient.post('/api/auth/register', userData);
-      return response;
-    } catch (error) {
-      throw this.handleError(error, 'Registration failed');
-    }
-  }
+      const response = await apiClient.post<{
+        userId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        isEmailVerified: boolean;
+        isMobileVerified: boolean;
+        verificationToken: string;
+        expiresAt: string;
+      }>('/api/auth/register', data);
 
-  async login(loginData: UserLoginData) {
-    try {
-      const response = await apiClient.post('/api/auth/login', loginData);
-
-      if (response.success && response.data) {
-        apiClient.setAccessToken(response.data.accessToken);
-        apiClient.setRefreshToken(response.data.refreshToken);
+      if (!response.success) {
+        throw new Error(response.message || 'Registration failed');
       }
 
-      return response;
-    } catch (error) {
-      throw this.handleError(error, 'Login failed');
+      console.log('Registration successful:', response.message);
+      return {
+        success: true,
+        message: response.message || 'Registration successful',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('Registration failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Registration failed');
     }
   }
 
-  async logout() {
+  /**
+   * User login with email/password
+   */
+  async login(credentials: UserLoginData): Promise<AuthResponse> {
     try {
-      apiClient.clearTokens();
-    } catch (error) {
-      console.error('Logout error:', error);
-      apiClient.clearTokens();
-    }
-  }
-
-  async getCurrentUser(): Promise<User | null> {
-    try {
-      const response = await apiClient.get('/api/user-profile');
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return null;
-    } catch (error) {
-      console.error('Get current user error:', error);
-      return null;
-    }
-  }
-
-  async refreshTokens(): Promise<AuthTokens | null> {
-    try {
-      const response = await apiClient.post('/api/auth/refresh');
-      if (response.success && response.data) {
-        const { accessToken, refreshToken, tokenType, expiresIn } = response.data;
-        apiClient.setAccessToken(accessToken);
-        apiClient.setRefreshToken(refreshToken);
-
-        return {
-          accessToken,
-          refreshToken,
-          tokenType,
-          expiresIn,
+      const response = await apiClient.post<{
+        accessToken: string;
+        refreshToken: string;
+        tokenType: string;
+        expiresIn: number;
+        user: {
+          userId: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          roles: string[];
+          permissions: string[];
+          lastLoginAt: string;
         };
+      }>('/api/auth/login', credentials);
+
+      if (!response.success) {
+        throw new Error(response.message || 'Login failed');
       }
-      return null;
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      return null;
+
+      const { accessToken, refreshToken } = response.data;
+
+      // Store JWT tokens securely
+      apiClient.setTokens(accessToken, refreshToken);
+
+      // Validate JWT token
+      const tokenInfo = JWTService.decodeToken(accessToken);
+      if (!tokenInfo) {
+        throw new Error('Invalid JWT token received');
+      }
+
+      console.log('Login successful, JWT token validated');
+      console.log('Token expires in:', JWTService.getTimeUntilExpiry(accessToken), 'seconds');
+      console.log('User roles:', JWTService.getRoles(accessToken));
+      console.log('User permissions:', JWTService.getPermissions(accessToken));
+
+      return {
+        success: true,
+        message: response.message || 'Login successful',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('Login failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Login failed');
     }
   }
 
-  getStoredTokens(): AuthTokens | null {
-    const accessToken = apiClient.getAccessToken();
-    const refreshToken = apiClient.getRefreshToken();
+  /**
+   * WhatsApp OTP send
+   */
+  async sendWhatsAppOTP(request: WhatsAppOTPRequest): Promise<WhatsAppOTPResponse> {
+    try {
+      const response = await apiClient.post<{
+        otpToken: string;
+        expiresAt: string;
+      }>('/api/auth/whatsapp/send-otp', request);
 
-    if (accessToken && refreshToken) {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to send OTP');
+      }
+
+      return {
+        success: true,
+        message: response.message || 'OTP sent successfully',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('WhatsApp OTP send failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to send OTP');
+    }
+  }
+
+  /**
+   * WhatsApp OTP verify
+   */
+  async verifyWhatsAppOTP(request: WhatsAppOTPVerifyRequest): Promise<WhatsAppOTPVerifyResponse> {
+    try {
+      const response = await apiClient.post<{
+        accessToken: string;
+        refreshToken: string;
+        tokenType: string;
+        expiresIn: number;
+        user: {
+          userId: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          roles: string[];
+          permissions: string[];
+          lastLoginAt: string;
+        };
+        isNewUser: boolean;
+      }>('/api/auth/whatsapp/verify-otp', request);
+
+      if (!response.success) {
+        throw new Error(response.message || 'OTP verification failed');
+      }
+
+      const { accessToken, refreshToken } = response.data;
+
+      // Store JWT tokens securely
+      apiClient.setTokens(accessToken, refreshToken);
+
+      // Validate JWT token
+      const tokenInfo = JWTService.decodeToken(accessToken);
+      if (!tokenInfo) {
+        throw new Error('Invalid JWT token received');
+      }
+
+      console.log('WhatsApp OTP verification successful, JWT token validated');
+      console.log('Token expires in:', JWTService.getTimeUntilExpiry(accessToken), 'seconds');
+      console.log('User roles:', JWTService.getRoles(accessToken));
+      console.log('User permissions:', JWTService.getPermissions(accessToken));
+
+      return {
+        success: true,
+        message: response.message || 'OTP verification successful',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('WhatsApp OTP verification failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'OTP verification failed');
+    }
+  }
+
+  /**
+   * Refresh JWT tokens
+   */
+  async refreshTokens(): Promise<TokenRefreshResponse> {
+    try {
+      const response = await apiClient.post<{
+        accessToken: string;
+        expiresIn: number;
+      }>('/api/auth/refresh', {});
+
+      if (!response.success) {
+        throw new Error(response.message || 'Token refresh failed');
+      }
+
+      const { accessToken } = response.data;
+
+      // Update access token
+      apiClient.setTokens(accessToken, apiClient.getRefreshToken() || '');
+
+      console.log('Tokens refreshed successfully');
+      console.log('New token expires in:', JWTService.getTimeUntilExpiry(accessToken), 'seconds');
+
+      return {
+        success: true,
+        message: response.message || 'Tokens refreshed successfully',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('Token refresh failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Token refresh failed');
+    }
+  }
+
+  /**
+   * Get stored JWT tokens
+   */
+  getStoredTokens(): AuthTokens | null {
+    try {
+      const accessToken = apiClient.getAccessToken();
+      const refreshToken = apiClient.getRefreshToken();
+
+      if (!accessToken || !refreshToken) return null;
+
+      // Get token info to determine expiration
+      const tokenInfo = apiClient.getTokenInfo();
+      if (!tokenInfo) return null;
+
       return {
         accessToken,
         refreshToken,
         tokenType: 'Bearer',
-        expiresIn: 3600, // Default value
+        expiresIn: tokenInfo.expiresIn,
       };
-    }
-    return null;
-  }
-
-  clearTokens(): void {
-    apiClient.clearTokens();
-  }
-
-  isAuthenticated(): boolean {
-    return !!apiClient.getAccessToken();
-  }
-
-  // WhatsApp OTP methods (new for WhatsApp authentication)
-  async sendWhatsAppOTP(request: WhatsAppOTPRequest): Promise<WhatsAppOTPResponse> {
-    try {
-      const response = await apiClient.post('/api/auth/whatsapp/send-otp', request);
-      return response;
     } catch (error) {
-      throw this.handleError(error, 'Failed to send WhatsApp OTP');
+      console.error('Failed to get stored tokens:', error);
+      return null;
     }
   }
 
-  async verifyWhatsAppOTP(request: WhatsAppOTPVerifyRequest): Promise<WhatsAppOTPVerifyResponse> {
+  /**
+   * Get current user from JWT token
+   */
+  getCurrentUser(): User | null {
     try {
-      const response = await apiClient.post('/api/auth/whatsapp/verify-otp', request);
+      const tokenInfo = apiClient.getTokenInfo();
+      if (!tokenInfo) return null;
 
-      if (response.success && response.data) {
-        apiClient.setAccessToken(response.data.accessToken);
-        apiClient.setRefreshToken(response.data.refreshToken);
+      // Extract user info from JWT token
+      const token = apiClient.getAccessToken();
+      if (!token) return null;
+
+      return {
+        userId: tokenInfo.userId || '',
+        email: '', // Email not in JWT payload, would need to fetch from profile
+        firstName: '', // Name not in JWT payload, would need to fetch from profile
+        lastName: '',
+        roles: tokenInfo.roles,
+        permissions: tokenInfo.permissions,
+        lastLoginAt: new Date().toISOString(),
+        // Other fields would be populated from user profile
+      };
+    } catch (error) {
+      console.error('Failed to get current user from JWT:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    return apiClient.isAuthenticated();
+  }
+
+  /**
+   * Check if user has specific role
+   */
+  hasRole(role: string): boolean {
+    const token = apiClient.getAccessToken();
+    return token ? JWTService.hasRole(token, role) : false;
+  }
+
+  /**
+   * Check if user has specific permission
+   */
+  hasPermission(permission: string): boolean {
+    const token = apiClient.getAccessToken();
+    return token ? JWTService.hasPermission(token, permission) : false;
+  }
+
+  /**
+   * Request password reset
+   */
+  async resetPassword(request: PasswordResetRequest): Promise<PasswordResetResponse> {
+    try {
+      const response = await apiClient.post<{
+        resetToken: string;
+        expiresAt: string;
+      }>('/api/auth/reset-password', request);
+
+      if (!response.success) {
+        throw new Error(response.message || 'Password reset request failed');
       }
 
-      return response;
-    } catch (error) {
-      throw this.handleError(error, 'OTP verification failed');
+      console.log('Password reset request successful');
+      return {
+        success: true,
+        message: response.message || 'Password reset link sent successfully',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('Password reset request failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Password reset request failed');
     }
   }
 
-  private handleError(error: any, defaultMessage: string): Error {
-    if (error.response?.data?.error?.message) {
-      return new Error(error.response.data.error.message);
-    }
+  /**
+   * Confirm password reset with new password
+   */
+  async confirmPasswordReset(request: PasswordResetConfirmRequest): Promise<PasswordResetConfirmResponse> {
+    try {
+      const response = await apiClient.post<{
+        userId: string;
+        email: string;
+      }>('/api/auth/confirm-reset', request);
 
-    if (error.message) {
-      return new Error(error.message);
-    }
+      if (!response.success) {
+        throw new Error(response.message || 'Password reset confirmation failed');
+      }
 
-    return new Error(defaultMessage);
+      console.log('Password reset confirmed successfully');
+      return {
+        success: true,
+        message: response.message || 'Password reset successful',
+        data: response.data,
+        timestamp: response.timestamp,
+        requestId: response.requestId
+      };
+    } catch (error: unknown) {
+      console.error('Password reset confirmation failed:', error);
+      throw new Error(error instanceof Error ? error.message : 'Password reset confirmation failed');
+    }
+  }
+
+  /**
+   * Logout user from backend
+   */
+  async logoutFromBackend(request?: LogoutRequest): Promise<LogoutResponse> {
+    try {
+      const logoutData = {
+        deviceId: request?.deviceId || 'web',
+        reason: request?.reason || 'USER_INITIATED'
+      };
+
+      const response = await apiClient.post<{
+        loggedOutAt: string;
+        sessionEnded: boolean;
+      }>('/api/auth/logout', logoutData);
+
+      if (!response.success) {
+        console.warn('Backend logout failed, but proceeding with local cleanup');
+      }
+
+      // Always clear local tokens and state
+      this.logoutLocal();
+
+      return {
+        success: true,
+        message: response.message || 'Logout successful',
+        data: response.data || {
+          loggedOutAt: new Date().toISOString(),
+          sessionEnded: true
+        },
+        timestamp: response.timestamp || new Date().toISOString(),
+        requestId: response.requestId || 'local_logout'
+      };
+    } catch (error: unknown) {
+      console.error('Backend logout failed:', error);
+
+      // Even if backend fails, clear local state
+      this.logoutLocal();
+
+      return {
+        success: true,
+        message: 'Logged out locally (backend unavailable)',
+        data: {
+          loggedOutAt: new Date().toISOString(),
+          sessionEnded: true
+        },
+        timestamp: new Date().toISOString(),
+        requestId: 'local_logout_fallback'
+      };
+    }
+  }
+
+  /**
+   * Logout user
+   */
+  logout(): void {
+    this.logoutLocal();
+  }
+
+  /**
+   * Local logout cleanup
+   */
+  private logoutLocal(): void {
+    apiClient.clearTokens();
+    console.log('User logged out, tokens cleared');
+  }
+
+  /**
+   * Get token information
+   */
+  getTokenInfo() {
+    return apiClient.getTokenInfo();
   }
 }
 
+// Export singleton instance
 export const authService = new AuthService();

@@ -13,9 +13,9 @@ interface TimeScreenProps {
     externalData?: {
         targetHoursPerDay?: number;
         startDate?: string;
-        difficultyLevel?: string;
+        difficultyLevel?: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
     };
-    onDataUpdate?: (data: { targetHoursPerDay?: number; startDate?: string; difficultyLevel?: string }) => void;
+    onDataUpdate?: (data: { targetHoursPerDay?: number; startDate?: string; difficultyLevel?: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" }) => void;
 }
 
 const hoursOptions = [2, 3, 4, 5, 6, 7, 8, 9, 10];

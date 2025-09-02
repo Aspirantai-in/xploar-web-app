@@ -30,7 +30,7 @@ Comprehensive API documentation for the Xploar Backend system, featuring the Stu
 ```json
 {
   "header": {
-    "alg": "RS256",
+    "alg": "HS256",
     "typ": "JWT"
   },
   "payload": {

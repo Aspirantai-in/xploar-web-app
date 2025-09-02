@@ -6,21 +6,32 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { authService } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitted(true);
+    try {
+      const response = await authService.resetPassword({ email });
+
+      if (response.success) {
+        setIsSubmitted(true);
+      } else {
+        setError(response.message || 'Failed to send reset link');
+      }
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred while sending the reset link');
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   if (isSubmitted) {
@@ -96,6 +107,9 @@ export default function ForgotPasswordPage() {
                     className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
+                {error && (
+                  <p className="text-sm text-red-600 mt-1">{error}</p>
+                )}
               </div>
 
               <Button

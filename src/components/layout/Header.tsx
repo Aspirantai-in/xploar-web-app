@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAppStore } from '@/lib/store';
 import { FEATURES } from '@/lib/utils/constants';
+import { authService } from '@/lib/api';
 
 export function Header() {
     const {
@@ -20,8 +21,19 @@ export function Header() {
 
     const [searchQuery, setSearchQuery] = useState('');
 
-    const handleSignOut = () => {
-        signOut();
+    const handleSignOut = async () => {
+        try {
+            // Call backend logout API
+            await authService.logoutFromBackend({
+                deviceId: 'web',
+                reason: 'USER_INITIATED'
+            });
+        } catch (error) {
+            console.error('Backend logout failed:', error);
+        } finally {
+            // Always clear local state
+            signOut();
+        }
     };
 
     const handleReset = () => {
